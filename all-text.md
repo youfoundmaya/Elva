@@ -7,9 +7,7 @@
 
 ## Auth Page Quote
 
-“Pictoria AI is a game changer for me. I have been able to generate high quality professional headshots within minutes. It has saved me countless hours of work and cost as well.”
-
-David S.
+"Creating visual content has never been this seamless. What once took hours of work can now be achieved in minutes, opening up endless possibilities for creativity"
 
 ## Model Training Note
 Training Data (Zip File) | Read the requirements below
