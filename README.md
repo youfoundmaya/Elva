@@ -41,7 +41,7 @@ Before you begin, ensure you have:
 
 ---
 
-## 🚀 Setup Instructions
+## Setup Instructions
 
 ### 1. Clone the Repository
 
@@ -111,7 +111,7 @@ Visit `http://localhost:3000` to see your app.
 
 ---
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 ├── app/                 # Next.js 15 app directory
@@ -123,7 +123,7 @@ Visit `http://localhost:3000` to see your app.
 
 ---
 
-## 💰 Pricing Plans
+## Pricing Plans
 
 - **Hobby**: 1 trained model/month, 100 images/month
 - **Pro**: 2 trained models/month, 300 images/month
