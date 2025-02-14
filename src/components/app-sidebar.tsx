@@ -19,6 +19,13 @@ import { NavUser } from "./nav-user"
 export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const supabase = await createClient();
   const {data} = await supabase.auth.getUser();
+  console.log(data)
+
+  const user = {
+    username: data.user?.user_metadata.username,
+    email: data.user?.email ?? ""
+
+  }
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -42,7 +49,7 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
         <NavMain/>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} /> 
+        <NavUser user={user} /> 
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
