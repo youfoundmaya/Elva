@@ -2,7 +2,7 @@ import React from "react";
 import AuthImg from "@/public/Abstract Curves and Colors.jpeg";
 import Image from "next/image";
 import { Logo } from "@/components/ui/logo";
-import AuthForm from "@/components/ui/authentication/AuthForm";
+import AuthForm from "@/components/authentication/AuthForm";
 
 const AuthenticationPage = () => {
   return (
