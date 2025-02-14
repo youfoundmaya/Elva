@@ -1,73 +1,81 @@
-"use client"
+"use client";
 
-import { ChevronRight, type LucideIcon } from "lucide-react"
+import { 
+  CreditCard,
+  Frame,
+  Image,
+  Images,
+  Layers,
+  Settings2,
+  SquareTerminal,
+ } from "lucide-react";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
-export function NavMain({
-  items,
-}: {
-  items: {
-    title: string
-    url: string
-    icon?: LucideIcon
-    isActive?: boolean
-    items?: {
-      title: string
-      url: string
-    }[]
-  }[]
-}) {
+const navItems =  [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: SquareTerminal,
+  },{
+    title: "Image Generation",
+    url: "/image-generation",
+    icon: Image,
+  },
+  {
+    title: "My models",
+    url: "/models",
+    icon: Frame 
+  },
+  {
+    title: "Train model",
+    url: "/model-training",
+    icon: Layers
+  },
+  {
+    title: "My Images",
+    url: "/gallery",
+    icon: Images
+  },{
+    title: "Billing",
+    url: "/billing",
+    icon: CreditCard
+  },
+  {
+    title: "Settings",
+    url: "/settings",
+    icon: Settings2
+  }
+]
+
+
+export function NavMain() {
+  const pathname = usePathname();
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
-          <Collapsible
-            key={item.title}
-            asChild
-            defaultOpen={item.isActive}
-            className="group/collapsible"
-          >
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
-                        <a href={subItem.url}>
-                          <span>{subItem.title}</span>
-                        </a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
+        {navItems.map((item) => (
+          <Link key={item.title} href={item.url} className={cn("rounded-none",
+          pathname === item.url ? 'text-primary bg-primary/5' : 'text-muted-foreground' ) }>
+          <SidebarMenuItem key={item.title}>
+            <SidebarMenuButton tooltip={item.title}>
+              {item.icon && <item.icon />}
+              <span>{item.title}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          </Link>
         ))}
       </SidebarMenu>
     </SidebarGroup>
-  )
+  );
 }
