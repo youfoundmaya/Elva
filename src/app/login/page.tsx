@@ -23,11 +23,9 @@ const AuthenticationPage = () => {
           
         <blockquote className="space-y-2">
             <p className="text-lg">
-              &ldquo;Creating visual content has never been this seamless. What
-              once took hours of work can now be achieved in minutes, opening up
-              endless possibilities for creativity&rdquo;
+              &ldquo;some random inspirational quote&rdquo;
             </p>
-            <footer className="text-sm">Try Artify AI now!</footer>
+            <footer className="text-sm">Try Elva now!</footer>
           </blockquote> 
          
         </div>

@@ -1,12 +1,16 @@
 "use client";
 
 import { 
+  BookOpenText,
+  ChartColumn,
   CreditCard,
   Frame,
   Image,
   Images,
   Layers,
   Settings2,
+  SpellCheck,
+  SquareStack,
   SquareTerminal,
  } from "lucide-react";
 
@@ -16,6 +20,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,28 +32,24 @@ const navItems =  [
     url: "/dashboard",
     icon: SquareTerminal,
   },{
-    title: "Image Generation",
-    url: "/image-generation",
-    icon: Image,
+    title: "My Notes",
+    url: "/my_notes",
+    icon: BookOpenText,
   },
   {
-    title: "My models",
-    url: "/models",
-    icon: Frame 
+    title: "Summary",
+    url: "/summary",
+    icon: SpellCheck 
   },
   {
-    title: "Train model",
-    url: "/model-training",
-    icon: Layers
+    title: "Quiz Generator",
+    url: "/quiz-generator",
+    icon: SquareStack
   },
   {
-    title: "My Images",
-    url: "/gallery",
-    icon: Images
-  },{
-    title: "Billing",
-    url: "/billing",
-    icon: CreditCard
+    title: "Learning Analytics",
+    url: "/analytics",
+    icon: ChartColumn
   },
   {
     title: "Settings",
@@ -62,7 +63,8 @@ export function NavMain() {
   const pathname = usePathname();
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Imagine. Generate. Evolve.</SidebarGroupLabel>
+      <SidebarGroupLabel>Focus. Grow. Achieve </SidebarGroupLabel>
+      <SidebarSeparator/> 
       <SidebarMenu>
         {navItems.map((item) => (
           <Link key={item.title} href={item.url} className={cn("rounded-none",
