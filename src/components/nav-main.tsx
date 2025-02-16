@@ -2,12 +2,14 @@
 
 import { 
   BookOpenText,
+  BotMessageSquare,
   ChartColumn,
   CreditCard,
   Frame,
   Image,
   Images,
   Layers,
+  LayoutDashboard,
   Settings2,
   SpellCheck,
   SquareStack,
@@ -30,7 +32,7 @@ const navItems =  [
   {
     title: "Dashboard",
     url: "/dashboard",
-    icon: SquareTerminal,
+    icon: LayoutDashboard,
   },{
     title: "My Notes",
     url: "/my_notes",
@@ -40,6 +42,11 @@ const navItems =  [
     title: "Summary",
     url: "/summary",
     icon: SpellCheck 
+  },
+  {
+    title: "Talk to Elva",
+    url: "/chatbot",
+    icon: BotMessageSquare 
   },
   {
     title: "Quiz Generator",
