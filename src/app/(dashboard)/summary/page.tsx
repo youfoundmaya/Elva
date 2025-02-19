@@ -10,18 +10,22 @@ import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
-if (typeof window !== "undefined") {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    "pdfjs-dist/build/pdf.worker.mjs",
-    import.meta.url
-  ).toString();
-}
+import { saveNote } from "@/app/actions/dashboard_actions";
+import { redirect } from "next/navigation";
 
 const Summary: React.FC = () => {
   const [inputText, setInputText] = useState<string>("");
   const [summary, setSummary] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+        "pdfjs-dist/build/pdf.worker.mjs",
+        import.meta.url
+      ).toString();
+    }
+  }, []);
 
   useEffect(() => {
     if (summary) {
@@ -38,10 +42,11 @@ const Summary: React.FC = () => {
     try {
       const prompt = `Summarize the following text in a structured format with headings, 
       subheadings, bullet points, concise and small mostly 1 or 2 line explanation, 
-      including only what is important. Make sure to give the output in markdown. Compulsarily include
-      the topic heading in heading 1, and subtopic/subtopics in heading 2 and if more subtopics 
-      in heading 3, if there is a list, and list has a header then make the header bold; if italics is used,
-      use it only for some important WORDS only. if italics is used for a topic then make it bold as well.  :\n\n${text}`;
+      including only what is important. Make sure to give the output in markdown. 
+      ONLY INCLUDE THE TOPIC HEADING in heading 1, there can be multiple subtopic/subtopics in 
+      heading 2 and if more subtopics in heading 3, if there is a list, and list has a header 
+      then make the header bold; if italics is used, use it only for some important WORDS only. 
+      if italics is used for a topic then make it bold as well.  :\n\n${text}`;
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
@@ -140,6 +145,19 @@ const Summary: React.FC = () => {
       return "Failed to extract text from PDF.";
     }
   }
+  
+  const handleAddToNotes = async () => {
+    if (!summary) return;
+    const result = await saveNote(summary);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Note added successfully!");
+      redirect("/my_notes");
+    }
+  };
+
+  
 
   async function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -209,9 +227,7 @@ const Summary: React.FC = () => {
             <div className="flex justify-start">
               {summary.trim() && (
                 <button
-                  onClick={() => {
-                    /* Add your save-to-notes logic here */
-                  }}
+                  onClick={handleAddToNotes}
                   className="px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition duration-300"
                 >
                   Add to Notes
@@ -232,25 +248,12 @@ const Summary: React.FC = () => {
 
         {summary && (
           <div className="p-6 border rounded-lg bg-gray-50 shadow-sm">
-            {(() => {
-              let cleanedSummary = summary.trim();
-
-              // Remove any standalone number at the end (like "34" or "2")
-              cleanedSummary = cleanedSummary
-                .replace(/(\n|\s|^)\d+\s*$/, "")
-                .trim();
-
-              return (
-                <>
-                  <ReactMarkdown
-                    className="prose prose-lg prose-gray dark:prose-invert"
-                    remarkPlugins={[remarkGfm]}
-                  >
-                    {cleanedSummary}
-                  </ReactMarkdown>
-                </>
-              );
-            })()}
+            <ReactMarkdown
+              className="prose prose-lg prose-gray dark:prose-invert"
+              remarkPlugins={[remarkGfm]}
+            >
+              {summary}
+            </ReactMarkdown>
           </div>
         )}
       </div>
