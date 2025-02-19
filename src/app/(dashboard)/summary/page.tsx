@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import * as pdfjsLib from "pdfjs-dist";
 import { getDocument } from "pdfjs-dist";
@@ -8,6 +8,8 @@ import "pdfjs-dist/build/pdf.worker.mjs";
 import mammoth from "mammoth";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 if (typeof window !== "undefined") {
   pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -21,12 +23,25 @@ const Summary: React.FC = () => {
   const [summary, setSummary] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (summary) {
+      toast.success(
+        "Summary has been generated. Add it to your notes for future reference!"
+      );
+    }
+  }, [summary]);
+
   async function summarizeText(text: string) {
     setLoading(true);
     setSummary("");
 
     try {
-      const prompt = `Summarize the following text in a structured format with headings, subheadings, bullet points, concise and small mostly 1 or 2 line explanation, including only what is important:\n\n${text}`;
+      const prompt = `Summarize the following text in a structured format with headings, 
+      subheadings, bullet points, concise and small mostly 1 or 2 line explanation, 
+      including only what is important. Make sure to give the output in markdown. Compulsarily include
+      the topic heading in heading 1, and subtopic/subtopics in heading 2 and if more subtopics 
+      in heading 3, if there is a list, and list has a header then make the header bold; if italics is used,
+      use it only for some important WORDS only. if italics is used for a topic then make it bold as well.  :\n\n${text}`;
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
@@ -52,15 +67,15 @@ const Summary: React.FC = () => {
       setLoading(false);
     }
   }
-  
+
   async function extractDocxText(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-  
+
       reader.onload = async () => {
         try {
           const arrayBuffer = reader.result as ArrayBuffer;
-  
+
           // ✅ Use Mammoth first (it handles plain text well)
           try {
             const mammothResult = await mammoth.extractRawText({ arrayBuffer });
@@ -71,36 +86,43 @@ const Summary: React.FC = () => {
           } catch (mammothError) {
             console.warn("Mammoth failed, falling back to Docxtemplater...");
           }
-  
+
           // ✅ PizZip with error handling
           let zip;
           try {
             zip = new PizZip(arrayBuffer);
           } catch (zipError) {
             console.error("PizZip error:", zipError);
-            reject("Error unzipping DOCX file. It may be corrupted or protected.");
+            reject(
+              "Error unzipping DOCX file. It may be corrupted or protected."
+            );
             return;
           }
-  
+
           // ✅ Use Docxtemplater as a fallback
           try {
-            const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+            const doc = new Docxtemplater(zip, {
+              paragraphLoop: true,
+              linebreaks: true,
+            });
             resolve(doc.getFullText().trim() || "No text found.");
           } catch (docError: any) {
             console.error("Docxtemplater error:", docError);
-            reject(`Error extracting DOCX text: ${docError.message || "Unknown error"}`);
+            reject(
+              `Error extracting DOCX text: ${
+                docError.message || "Unknown error"
+              }`
+            );
           }
         } catch (error) {
           reject("Error processing DOCX file.");
         }
       };
-  
+
       reader.onerror = () => reject("File reading error.");
       reader.readAsArrayBuffer(file);
     });
   }
-  
-
 
   async function extractPdfText(arrayBuffer: ArrayBuffer): Promise<string> {
     try {
@@ -158,38 +180,77 @@ const Summary: React.FC = () => {
     }
   }
   return (
-    <div className="flex flex-col items-center min-h-screen p-6">
+    <div className="flex flex-col items-center min-h-screen p-8">
       <h1 className="text-4xl font-bold text-gray-900 mb-2">
         AI Summarization
       </h1>
-      <p className="text-gray-700 mb-6 text-center max-w-lg">
+      <p className="text-gray-700 mb-6 text-center max-w-xl">
         Upload a DOCX, MD, TXT, or PDF file to generate a summary.
       </p>
-      <div className="w-full max-w-2xl bg-white shadow-lg rounded-2xl p-6">
-        <input
-          type="file"
-          accept=".docx,.pdf,.md,.txt"
-          onChange={handleFileUpload}
-          className="block w-full mt-2 p-3 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500"
-        />
-        <br />
-        <textarea
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder="Or paste text here..."
-          className="w-full p-4 border rounded-lg resize-none shadow-sm focus:ring-2 focus:ring-blue-500"
-          rows={5}
-        />
-        <button
-          onClick={() => summarizeText(inputText)}
-          className="px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition duration-300"
-          disabled={loading || !inputText.trim()}
-        >
-          {loading ? "Summarizing..." : "Summarize"}
-        </button>
+      <div className="w-full max-w-3xl bg-white shadow-lg rounded-2xl p-8 space-y-6">
+        {/* File Upload Input */}
+        <div className="w-full">
+          <input
+            type="file"
+            accept=".docx,.pdf,.md,.txt"
+            onChange={handleFileUpload}
+            className="block w-full p-3 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div className="flex flex-col gap-4">
+          <textarea
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="Or paste text here..."
+            className="w-full p-4 border rounded-lg resize-none shadow-sm focus:ring-2 focus:ring-blue-500"
+            rows={5}
+          />
+          <div className="flex justify-between">
+            <div className="flex justify-start">
+              {summary.trim() && (
+                <button
+                  onClick={() => {
+                    /* Add your save-to-notes logic here */
+                  }}
+                  className="px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition duration-300"
+                >
+                  Add to Notes
+                </button>
+              )}
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => summarizeText(inputText)}
+                className="px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition duration-300"
+                disabled={loading || !inputText.trim()}
+              >
+                {loading ? "Summarizing..." : "Summarize"}
+              </button>
+            </div>
+          </div>
+        </div>
+
         {summary && (
-          <div className="mt-6 p-4 border rounded-lg bg-gray-50 shadow-sm">
-            {summary}
+          <div className="p-6 border rounded-lg bg-gray-50 shadow-sm">
+            {(() => {
+              let cleanedSummary = summary.trim();
+
+              // Remove any standalone number at the end (like "34" or "2")
+              cleanedSummary = cleanedSummary
+                .replace(/(\n|\s|^)\d+\s*$/, "")
+                .trim();
+
+              return (
+                <>
+                  <ReactMarkdown
+                    className="prose prose-lg prose-gray dark:prose-invert"
+                    remarkPlugins={[remarkGfm]}
+                  >
+                    {cleanedSummary}
+                  </ReactMarkdown>
+                </>
+              );
+            })()}
           </div>
         )}
       </div>
