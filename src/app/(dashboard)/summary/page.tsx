@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import mammoth from "mammoth";
+import { toast } from "sonner";
 
 const Summary: React.FC = () => {
   const [inputText, setInputText] = useState<string>("");
@@ -15,32 +16,24 @@ const Summary: React.FC = () => {
         `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [{ parts: [{ text }] }],
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 256,
-            },  safetySettings: [
+            generationConfig: { temperature: 0.7, maxOutputTokens: 256 },
+            safetySettings: [
               { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
               { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
               { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-              { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-            ]
+              { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+            ],
           }),
         }
       );
-  
+
       const data = await response.json();
-      console.log("API Response:", data);
-  
-      if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-        setSummary(data.candidates[0].content.parts[0].text);
-      } else {
-        setSummary("No summary generated. Check API response.");
-      }
+      setSummary(
+        data?.candidates?.[0]?.content?.parts?.[0]?.text || "No summary generated."
+      );
     } catch (error) {
       console.error("Error summarizing text:", error);
       setSummary("Error generating summary.");
@@ -54,31 +47,61 @@ const Summary: React.FC = () => {
     if (!file) return;
 
     const reader = new FileReader();
+
     reader.onload = async (e) => {
       if (!e.target?.result) return;
 
-      const arrayBuffer = e.target.result as ArrayBuffer;
-      const result = await mammoth.extractRawText({ arrayBuffer });
-      setInputText(result.value || "No text found in DOCX.");
+      const fileContent = e.target.result as string;
+      let extractedText = "";
+
+      try {
+        if (file.name.endsWith(".docx")) {
+          // Extract text from DOCX
+          const arrayBuffer = e.target.result as ArrayBuffer;
+          const result = await mammoth.extractRawText({ arrayBuffer });
+          extractedText = result.value || "No text found in DOCX.";
+        } else if (file.name.endsWith(".md") || file.name.endsWith(".txt")) {
+          // Extract text from MD and TXT
+          extractedText = fileContent.trim();
+        } else {
+          // Show Sonner toast for unsupported files
+          toast.error("Unsupported File", {
+            description: "Please upload a DOCX, MD, or TXT file.",
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Error parsing file:", error);
+        toast.error("File Processing Error", {
+          description: "Failed to extract text from the file.",
+        });
+        return;
+      }
+
+      setInputText(extractedText);
     };
 
-    reader.readAsArrayBuffer(file);
+    if (file.name.endsWith(".md") || file.name.endsWith(".txt")) {
+      reader.readAsText(file);
+    } else {
+      reader.readAsArrayBuffer(file);
+    }
   }
 
   return (
     <div className="flex flex-col items-center min-h-screen p-6">
       <h1 className="text-4xl font-bold text-gray-900 mb-2">AI Summarization</h1>
       <p className="text-gray-700 mb-6 text-center max-w-lg">
-        Upload a DOCX file or paste text below to generate a summary.
+        Upload a DOCX, MD, or TXT file or paste text below to generate a summary.
       </p>
 
       <div className="w-full max-w-2xl bg-white shadow-lg rounded-2xl p-6">
         <div className="mb-4">
           <label className="block mb-2 font-medium text-gray-700">
-            Upload DOCX:
+            Upload File:
             <input
               type="file"
-              accept=".docx"
+              accept=".md,.docx,.txt"
               onChange={handleFileUpload}
               className="block w-full mt-2 p-3 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500"
             />
