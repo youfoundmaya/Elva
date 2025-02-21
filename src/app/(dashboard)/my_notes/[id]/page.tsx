@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { fetchNotes } from "@/app/actions/dashboard_actions";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 const NotePage = () => {
   const searchParams = useSearchParams();
   const noteId = searchParams.get("id");
+  const router = useRouter();
 
   const [note, setNote] = useState<{ id: string; summary: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,8 +56,18 @@ const NotePage = () => {
 
   return (
     <div className="min-h-screen p-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Note Details</h1> {/* ✅ Moved Outside Card */}
 
+      <div className="flex justify-between">
+      <Button
+        variant="outline"
+        className="mb-4 flex justify-start"
+        onClick={() => router.back()}
+      >
+        Back
+      </Button>
+      <h1 className="text-2xl font-bold text-gray-900 mb-4 flex justify-end">Note Details</h1> 
+      </div>
+      
       {loading ? (
         <p>Loading...</p>
       ) : error ? (
