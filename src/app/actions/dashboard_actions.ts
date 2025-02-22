@@ -58,3 +58,22 @@ export async function saveFlashcards(title: string, flashcards: { question: stri
     revalidatePath("/dashboard"); 
     return { success: true };
 }
+
+export async function fetchFlashcards() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: "User not authenticated" };
+
+    const { data, error } = await supabase
+        .from("flashcards")
+        .select("id, title, cards")
+        .eq("user_id", user.id);
+
+    if (error) {
+        console.error("Error fetching flashcards:", error);
+        return { error: error.message };
+    }
+
+    return data || [];
+}
