@@ -1,6 +1,7 @@
 "use client";
 
 import { 
+  BookCopy,
   BookOpenText,
   BotMessageSquare,
   ChartColumn,
@@ -52,6 +53,11 @@ const navItems =  [
     title: "Quiz Generator",
     url: "/quiz-generator",
     icon: SquareStack
+  },
+  {
+    title: "Flash Cards",
+    url: "/flash_cards",
+    icon: BookCopy
   },
   {
     title: "Learning Analytics",

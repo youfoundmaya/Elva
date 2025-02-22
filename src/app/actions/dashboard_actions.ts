@@ -35,3 +35,26 @@ export async function fetchNotes() {
 
     return data || [];
 }
+
+export async function saveFlashcards(title: string, flashcards: { question: string; answer: string }[]) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: "User not authenticated" };
+    if (!title.trim() || flashcards.length === 0) return { error: "Title and flashcards cannot be empty" };
+
+    const { error } = await supabase
+        .from("flashcards")
+        .insert([
+            {
+                user_id: user.id,
+                title,
+                cards: flashcards, // Store flashcards as JSONB
+            }
+        ]);
+
+    if (error) return { error: error.message };
+
+    revalidatePath("/dashboard"); 
+    return { success: true };
+}

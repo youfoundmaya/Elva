@@ -69,7 +69,7 @@ const NotePage = () => {
       </div>
       
       {loading ? (
-        <p>Loading...</p>
+        <p className="flex justify-center items-center h-screen">Loading...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (

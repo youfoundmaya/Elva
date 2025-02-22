@@ -58,7 +58,7 @@ const MyNotes = () => {
       <h1 className="text-4xl font-bold text-gray-900 mb-6">My Notes</h1>
 
       {loading ? (
-        <p>Loading...</p>
+        <p className="flex justify-center items-center h-screen">Loading...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
