@@ -145,7 +145,7 @@ const Summary: React.FC = () => {
       return "Failed to extract text from PDF.";
     }
   }
-  
+
   const handleAddToNotes = async () => {
     if (!summary) return;
     const result = await saveNote(summary);
@@ -156,8 +156,6 @@ const Summary: React.FC = () => {
       redirect("/my_notes");
     }
   };
-
-  
 
   async function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];

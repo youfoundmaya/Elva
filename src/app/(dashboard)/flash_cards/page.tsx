@@ -5,13 +5,21 @@ import { toast } from "sonner";
 import { Card } from "@/components/ui/card"; // Import ShadCN Card
 import { motion } from "framer-motion";
 import { getDocument } from "pdfjs-dist";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import "pdfjs-dist/build/pdf.worker.mjs";
 import mammoth from "mammoth";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import { saveFlashcards } from "@/app/actions/dashboard_actions";
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -21,8 +29,8 @@ const FlashCards = () => {
   const [flashcards, setFlashcards] = useState<
     { question: string; answer: string }[]
   >([]);
+  const router = useRouter();
 
-  
   const [showDialog, setShowDialog] = useState(false);
   const [title, setTitle] = useState("");
 
@@ -185,16 +193,17 @@ const FlashCards = () => {
       });
       return;
     }
-  
+
     if (!title.trim()) {
       toast.error("Title cannot be empty!");
       return;
     }
-  
+
     try {
       const result = await saveFlashcards(title.trim(), flashcards);
-  
-      if (result?.error) { // Explicit check for error existence
+
+      if (result?.error) {
+        // Explicit check for error existence
         toast.error("Failed to save flashcards", { description: result.error });
       } else {
         toast.success("Flashcards saved successfully!");
@@ -202,14 +211,13 @@ const FlashCards = () => {
         setInputText("");
         setShowDialog(false);
         setTitle("");
-        redirect('/my_notes');
+        router.push(`my_notes`);
       }
     } catch (error) {
       console.error("Error saving flashcards:", error);
-      toast.error("Unexpected error while saving.");
+      //toast.error("Unexpected error while saving.");
     }
   };
-  
 
   return (
     <div className="flex flex-col items-center">
@@ -238,41 +246,42 @@ const FlashCards = () => {
       </div>
       <div className="flex gap-4 p-4">
         {/* Adds spacing between buttons */}
-        
+
         {flashcards.length > 0 && (
-  <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
-    <AlertDialogTrigger asChild>
-      <button
-        className="px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition duration-300"
-        onClick={() => setShowDialog(true)}
-      >
-        Add to Notes
-      </button>
-    </AlertDialogTrigger>
+          <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
+            <AlertDialogTrigger asChild>
+              <button
+                className="px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition duration-300"
+                onClick={() => setShowDialog(true)}
+              >
+                Add to Notes
+              </button>
+            </AlertDialogTrigger>
 
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>Save Flashcards</AlertDialogTitle>
-        <AlertDialogDescription>
-          Enter a title for this flashcard set.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Save Flashcards</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Enter a title for this flashcard set.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
 
-      <Input 
-        type="text" 
-        placeholder="Enter title..." 
-        value={title} 
-        onChange={(e) => setTitle(e.target.value)} 
-      />
+              <Input
+                type="text"
+                placeholder="Enter title..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
 
-      <AlertDialogFooter>
-        <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-        <Button onClick={handleSave}>Save</Button>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-)}
-
+              <AlertDialogFooter>
+                <Button variant="outline" onClick={() => setShowDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSave}>Save</Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
 
         <button
           onClick={() => generateFlashcards(inputText)}
