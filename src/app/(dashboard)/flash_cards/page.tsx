@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { BookCopy, Library, SquareLibrary } from "lucide-react";
 
 const FlashCards = () => {
   const [inputText, setInputText] = useState<string>("");
@@ -220,10 +221,15 @@ const FlashCards = () => {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <h1 className="text-4xl font-bold text-gray-900 mb-2">
-        Prepare Flashcards
-      </h1>
+    <div className="min-h-screen p-8 flex flex-col items-center">
+
+<h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+  Prepare Flashcards
+  <SquareLibrary className="w-10 h-10" />
+</h1>
+
+      
+
       <p className="text-gray-700 mb-6 text-center max-w-xl">
         Upload a DOCX, MD, TXT, or PDF file to prepare flashcards, or enter a
         topic in the text box.

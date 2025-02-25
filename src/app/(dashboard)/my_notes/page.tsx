@@ -6,6 +6,7 @@ import { fetchNotes, fetchFlashcards } from "@/app/actions/dashboard_actions";
 import removeMarkdown from "remove-markdown";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookOpenTextIcon, NotebookText } from "lucide-react";
 
 const MyNotes = () => {
   const [notes, setNotes] = useState<{ id: string; summary: string }[]>([]);
@@ -33,7 +34,10 @@ const MyNotes = () => {
           setNotes(fetchedNotes || []);
         } else if (selectedType === "flashcards") {
           const fetchedFlashcards = await fetchFlashcards();
-          if (Array.isArray(fetchedFlashcards) && fetchedFlashcards.length > 0) {
+          if (
+            Array.isArray(fetchedFlashcards) &&
+            fetchedFlashcards.length > 0
+          ) {
             setFlashcards(fetchedFlashcards);
           } else {
             console.warn("No flashcards found.");
@@ -73,9 +77,12 @@ const MyNotes = () => {
 
   return (
     <div className="min-h-screen p-8">
-      <h1 className="text-4xl font-bold text-gray-900 mb-6 text-center">My Notes</h1>
+      <div className="flex justify-center items-center gap-3 mb-6">
+        
+        <h1 className="text-4xl font-bold text-gray-900">My Notes</h1>
+        <NotebookText className="w-10 h-10" />
+      </div>
 
-      {/* ShadCN Tabs */}
       <Tabs
         defaultValue="summaries"
         value={selectedType}
@@ -91,7 +98,9 @@ const MyNotes = () => {
         </TabsList>
 
         {loading ? (
-          <p className="flex justify-center items-center h-screen">Loading...</p>
+          <p className="flex justify-center items-center h-screen">
+            Loading...
+          </p>
         ) : error ? (
           <p className="text-red-500">{error}</p>
         ) : (
@@ -100,7 +109,9 @@ const MyNotes = () => {
             <TabsContent value="summaries">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {notes.map((note) => {
-                  const { heading, content } = extractHeadingAndContent(note.summary);
+                  const { heading, content } = extractHeadingAndContent(
+                    note.summary
+                  );
 
                   return (
                     <div
@@ -111,7 +122,9 @@ const MyNotes = () => {
                       <h2 className="text-lg font-semibold text-gray-900 mb-2">
                         {heading}
                       </h2>
-                      <p className="text-gray-700 text-sm line-clamp-3">{content}</p>
+                      <p className="text-gray-700 text-sm line-clamp-3">
+                        {content}
+                      </p>
                     </div>
                   );
                 })}
@@ -125,23 +138,29 @@ const MyNotes = () => {
                   flashcards.map((set) => (
                     <div
                       key={set.id}
-                      onClick={() => router.push(`/my_notes/flashcard?id=${set.id}`)}
+                      onClick={() =>
+                        router.push(`/my_notes/flashcard?id=${set.id}`)
+                      }
                       className="p-4 border rounded-lg shadow-md bg-white hover:shadow-lg transition-shadow cursor-pointer"
                     >
-                      <h2 className="text-xl font-semibold text-gray-900 text-center">
+                      <h2 className="text-l font-semibold text-gray-900 text-center">
                         {set.title}
                       </h2>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-center">No flashcards found.</p>
+                  <p className="text-gray-500 text-center">
+                    No flashcards found.
+                  </p>
                 )}
               </div>
             </TabsContent>
 
             {/* Quizzes Tab */}
             <TabsContent value="quizzes">
-              <p className="text-gray-500 text-center">Quizzes feature coming soon!</p>
+              <p className="text-gray-500 text-center">
+                Quizzes feature coming soon!
+              </p>
             </TabsContent>
           </>
         )}

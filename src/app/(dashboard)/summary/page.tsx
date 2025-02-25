@@ -12,6 +12,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { saveNote } from "@/app/actions/dashboard_actions";
 import { redirect } from "next/navigation";
+import { ArrowDownAZ, SpellCheck } from "lucide-react";
 
 const Summary: React.FC = () => {
   const [inputText, setInputText] = useState<string>("");
@@ -196,9 +197,12 @@ const Summary: React.FC = () => {
     }
   }
   return (
+    
     <div className="flex flex-col items-center min-h-screen p-8">
-      <h1 className="text-4xl font-bold text-gray-900 mb-2">
-        AI Summarization
+      <h1 className="text-4xl font-bold text-gray-900 mb-6 flex items-center justify-center gap-2 p-3">
+      
+        Smart Summary
+        <ArrowDownAZ className="w-10 h-10" />      
       </h1>
       <p className="text-gray-700 mb-6 text-center max-w-xl">
         Upload a DOCX, MD, TXT, or PDF file to generate a summary.

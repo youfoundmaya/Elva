@@ -91,12 +91,6 @@ export function NavUser({
                 Account
               </DropdownMenuItem>
               </Link>
-              <Link href="/billing" className="w-full cursor-pointer">
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

@@ -3,11 +3,23 @@
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { fetchFlashcards } from "@/app/actions/dashboard_actions";
+import { fetchFlashcards, deleteFlashcard } from "@/app/actions/dashboard_actions";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 
 const FlashcardPage = () => {
   const searchParams = useSearchParams();
@@ -49,15 +61,45 @@ const FlashcardPage = () => {
     }
   }, [flashcardId]);
 
+  const handleDelete = async () => {
+      if (!flashcardId) return;
+  
+      try {
+        await deleteFlashcard(flashcardId); // Ensure this function is defined in your actions
+        toast.success("Note deleted successfully!");
+        router.push("/my_notes"); // Redirect after deletion
+      } catch (error) {
+        console.error("Error deleting note:", error);
+        toast.error("Failed to delete note.");
+      }
+    };
+  
+
   return (
     <div className="min-h-screen p-8">
-      <Button
-        variant="outline"
-        className="mb-4 flex justify-start"
-        onClick={() => router.back()}
-      >
-        Back
-      </Button>
+      <div className="flex justify-between items-center mb-4">
+      <Button variant="outline" onClick={() => router.back()}>
+          Back
+        </Button>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive">Delete</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. Do you want to permanently delete this flashcard set?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>Delete Permanently</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        </div>
       {loading ? (
         <p className="text-center text-gray-500">Loading...</p>
       ) : flashcardSet ? (
