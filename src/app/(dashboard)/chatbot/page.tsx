@@ -3,7 +3,18 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MessageSquareMore, MessagesSquare } from "lucide-react";
+import { MessageSquareMore, MessagesSquare, Save } from "lucide-react";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { saveChat } from "@/app/actions/dashboard_actions";
 
 type Message = {
   role: "user" | "assistant";
@@ -14,6 +25,8 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const router = useRouter();
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -57,15 +70,45 @@ export default function Chatbot() {
       setLoading(false);
     }
   };
+  const handleSaveChat = async () => {
+    const result = await saveChat(messages);
+    if (result.success) setShowSaveDialog(false);
+    toast.success("This chat has been saved!");
+  };
 
   return (
     <div className="min-h-screen p-8">
-      <div className="flex justify-center items-center gap-3 mb-6">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-2">
           Elva
           <MessagesSquare className="w-10 h-10" />
         </h1>
+        {messages.length > 0 && (
+          <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Save className="mr-2 w-5 h-5" /> Save Chat
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogTitle>Save Conversation?</DialogTitle>
+              <DialogDescription>
+                Do you want to save this chat session to access later?
+              </DialogDescription>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSaveDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveChat}>Save</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
+
       <Card className="w-full h-[70vh] p-4 overflow-y-auto border">
         <CardContent className="flex flex-col space-y-4">
           {messages.length === 0 ? (
@@ -93,6 +136,7 @@ export default function Chatbot() {
           )}
         </CardContent>
       </Card>
+
       <div className="w-full flex mt-4">
         <Input
           value={input}

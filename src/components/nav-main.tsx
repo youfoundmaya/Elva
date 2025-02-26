@@ -5,16 +5,10 @@ import {
   BookOpenText,
   BotMessageSquare,
   ChartColumn,
-  CreditCard,
-  Frame,
-  Image,
-  Images,
-  Layers,
   LayoutDashboard,
   Settings2,
   SpellCheck,
   SquareStack,
-  SquareTerminal,
  } from "lucide-react";
 
 import {
