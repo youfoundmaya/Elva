@@ -200,7 +200,6 @@ const Summary: React.FC = () => {
     
     <div className="flex flex-col items-center min-h-screen p-8">
       <h1 className="text-4xl font-bold text-gray-900 mb-6 flex items-center justify-center gap-2 p-3">
-      
         Smart Summary
         <ArrowDownAZ className="w-10 h-10" />      
       </h1>
