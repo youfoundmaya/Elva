@@ -61,3 +61,27 @@ export async function updateProfile(values: {username : string}): Promise<AuthRe
         data: profileData || null
     }
 }
+
+export async function resetPassword(values: {email : string}): Promise<AuthResponse> {
+    const supabase = await createClient()
+
+    const { data: resetpasswordData, error } = await supabase.auth.resetPasswordForEmail(values.email)   
+    return{
+        error: error?.message || "There was an error sending the reset password email.",
+        success: !error,
+        data: resetpasswordData || null
+    }
+}
+
+export async function changePassword(newPassword: string): Promise<AuthResponse> {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase.auth.updateUser({
+        password: newPassword
+    })   
+    return{
+        error: error?.message || "There was an error updating password.",
+        success: !error,
+        data: data || null
+    }
+}
