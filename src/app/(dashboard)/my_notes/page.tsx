@@ -139,7 +139,7 @@ const MyNotes = () => {
                     <div
                       key={set.id}
                       onClick={() =>
-                        router.push(`/my_notes/flashcard?id=${set.id}`)
+                      router.push(`/my_notes/flashcard?id=${set.id}`)
                       }
                       className="p-4 border rounded-lg shadow-md bg-white hover:shadow-lg transition-shadow cursor-pointer"
                     >

@@ -1,9 +1,14 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MessageSquareMore, MessagesSquare, Save } from "lucide-react";
+import {
+  MessageSquareMore,
+  MessageSquareReply,
+  MessagesSquare,
+  Save,
+} from "lucide-react";
 import {
   Dialog,
   DialogTrigger,
@@ -14,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { saveChat } from "@/app/actions/dashboard_actions";
+import { saveChat, fetchChats } from "@/app/actions/dashboard_actions";
 
 type Message = {
   role: "user" | "assistant";
@@ -26,7 +31,24 @@ export default function Chatbot() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showChatDialog, setShowChatDialog] = useState(false);
+  const [chatTitle, setChatTitle] = useState(""); 
+    const [savedChats, setSavedChats] = useState<{ id: string; title: string }[]>(
+    []
+  ); // State for saved chat titles
   const router = useRouter();
+
+  async function getChats() {
+    const fetchedChats = await fetchChats();
+    setSavedChats(fetchedChats || []);
+    console.log(savedChats);
+  }
+
+  useEffect(() => {
+    if (showChatDialog) {
+      getChats();
+    }
+  }, [showChatDialog]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -35,12 +57,11 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
-
     try {
       const prompt = `Provide a clear and concise response to the following input in at most 5 lines. Do not use bullet points, markdown, or any formatting. Keep it direct and easy to understand. Input:\n\n${input}`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -52,10 +73,12 @@ export default function Chatbot() {
       );
 
       const data = await response.json();
+
       const aiMessage: Message = {
         role: "assistant",
         text:
           data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+          data?.candidates?.[0]?.parts?.[0]?.text ||
           "I'm not sure how to respond.",
       };
 
@@ -70,10 +93,26 @@ export default function Chatbot() {
       setLoading(false);
     }
   };
+
   const handleSaveChat = async () => {
-    const result = await saveChat(messages);
-    if (result.success) setShowSaveDialog(false);
-    toast.success("This chat has been saved!");
+    if (!chatTitle.trim()) {
+      toast.error("Please enter a title!");
+      return;
+    }
+
+    const result = await saveChat(chatTitle, messages);
+    if (result.success) {
+      setShowSaveDialog(false);
+      setChatTitle("");
+      //      setSavedChats((prev) => [...prev, chatTitle]);
+      toast.success("Chat has been saved!");
+    } else {
+      toast.error("Failed to save chat.");
+    }
+  };
+
+  const handleChatClick = async (id: string) => {
+    console.log(id);
   };
 
   return (
@@ -91,10 +130,18 @@ export default function Chatbot() {
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogTitle>Save Conversation?</DialogTitle>
+              <DialogTitle>Save Conversation</DialogTitle>
               <DialogDescription>
-                Do you want to save this chat session to access later?
+                Enter a title for this chat session.
               </DialogDescription>
+
+              <Input
+                value={chatTitle}
+                onChange={(e) => setChatTitle(e.target.value)}
+                placeholder="Enter chat title..."
+                className="mt-2"
+              />
+
               <DialogFooter>
                 <Button
                   variant="outline"
@@ -102,13 +149,51 @@ export default function Chatbot() {
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleSaveChat}>Save</Button>
+                <Button onClick={handleSaveChat} disabled={!chatTitle.trim()}>
+                  Save
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
         )}
-      </div>
 
+        <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
+          <DialogTrigger asChild>
+            <Button variant="outline" onClick={() => setShowChatDialog(true)}>
+              <MessageSquareReply className="mr-2 w-5 h-5" /> View saved chats
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Your saved chats</DialogTitle>
+            <DialogDescription>Select any chat to continue:</DialogDescription>
+            <div className="w-full">
+              
+                {savedChats.map((chat) => (
+                  <ul
+                  key={chat.id}
+                  >
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleChatClick(chat.id)}
+                    className="cursor-pointer hover:bg-gray-200 p-3 outline-solid text-md"
+                  >
+                    {chat.title}
+                  </Button>
+                  
+              </ul>
+                ))}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowChatDialog(false)}
+              >
+                Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
       <Card className="w-full h-[70vh] p-4 overflow-y-auto border">
         <CardContent className="flex flex-col space-y-4">
           {messages.length === 0 ? (

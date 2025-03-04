@@ -125,7 +125,7 @@ export async function deleteFlashcard(flashcardId : string){
     }
   }
 
-  export const saveChat = async (messages: { role: "user" | "assistant"; text: string }[]) => {
+  export const saveChat = async (title:string, messages: { role: "user" | "assistant"; text: string }[]) => {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
   
@@ -135,7 +135,7 @@ export async function deleteFlashcard(flashcardId : string){
   
     const { error } = await supabase
       .from("chats")
-      .insert([{ user_id: user.id, messages }]);
+      .insert([{ user_id: user.id, title, messages }]);
   
     if (error) {
       console.error("Failed to save chat:", error);
@@ -144,3 +144,16 @@ export async function deleteFlashcard(flashcardId : string){
   
     return { success: true };
   };
+
+  export const fetchChats = async () => {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const { data, error } = await supabase.from("chats").select("id, title").eq("user_id",user?.id);
+
+    if (error) {
+      console.error("Error fetching chats:", error);
+      }
+    return data || []
+
+  }; 
