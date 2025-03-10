@@ -125,25 +125,50 @@ export async function deleteFlashcard(flashcardId : string){
     }
   }
 
-  export const saveChat = async (title:string, messages: { role: "user" | "assistant"; text: string }[]) => {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-  
-    if (!user) {
-      return { success: false, error: "User not authenticated" };
-    }
-  
-    const { error } = await supabase
-      .from("chats")
-      .insert([{ user_id: user.id, title, messages }]);
-  
-    if (error) {
-      console.error("Failed to save chat:", error);
-      return { success: false, error: error.message };
-    }
-  
-    return { success: true };
+  type Message = {
+    role: "user" | "assistant";
+    text: string;
   };
+  
+  export async function saveChat(chatId: string | null, title: string, messages: Message[]) {
+    try {
+      const supabase = await createClient();
+      const user = await supabase.auth.getUser(); // Get authenticated user
+      if (!user.data?.user) {
+        throw new Error("User not authenticated");
+      }
+  
+      const messagesJSON = JSON.stringify(messages); // Convert messages array to JSON
+  
+      if (chatId) {
+        // ✅ Update existing chat
+        const { error } = await supabase
+          .from("chats")
+          .update({ messages: messagesJSON }) // Store as JSON
+          .eq("id", chatId)
+          .eq("user_id", user.data.user.id); // Ensure the user owns this chat
+  
+        if (error) throw error;
+        return { success: true, id: chatId };
+      } else {
+        // ✅ Create new chat
+        const { data, error } = await supabase
+          .from("chats")
+          .insert([{ title, messages: messagesJSON, user_id: user.data.user.id }]) // Include user_id
+          .select()
+          .single();
+  
+        if (error) throw error;
+        return { success: true, id: data.id };
+      }
+    } catch (error) {
+      console.error("Error saving chat:", error);
+      return { success: false, error: (error as Error).message };
+    }
+  }
+  
+  
+  
 
   export const fetchChats = async () => {
     const supabase = await createClient();

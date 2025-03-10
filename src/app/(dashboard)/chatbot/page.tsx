@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   MessageSquareMore,
+  MessageSquarePlus,
   MessageSquareReply,
   MessagesSquare,
   Save,
@@ -20,9 +21,13 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { saveChat, fetchChats, fetchChatById, deleteChat } from "@/app/actions/dashboard_actions";
+import {
+  saveChat,
+  fetchChats,
+  fetchChatById,
+  deleteChat,
+} from "@/app/actions/dashboard_actions";
 import { useRef } from "react"; // Import useRef
-
 
 type Message = {
   role: "user" | "assistant";
@@ -35,33 +40,50 @@ export default function Chatbot() {
   const [loading, setLoading] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showChatDialog, setShowChatDialog] = useState(false);
-  const [chatTitle, setChatTitle] = useState(""); 
-    const [savedChats, setSavedChats] = useState<{ id: string; title: string }[]>(
+  const [chatTitle, setChatTitle] = useState("");
+  const [chatId, setChatId] = useState<string | null>(null);
+  const [loadingChats, setLoadingChats] = useState(false);
+  const [savedChats, setSavedChats] = useState<{ id: string; title: string }[]>(
     []
   ); // State for saved chat titles
+  const [hasChats, setHasChats] = useState(false);
   const router = useRouter();
   const toastID = useId();
 
   async function getChats() {
+    setLoadingChats(true);
+    console.log("Fetching saved chats...");
+
     const fetchedChats = await fetchChats();
-    setSavedChats(fetchedChats || []);
-    console.log(savedChats);
+    console.log("Fetched Chats:", fetchedChats);
+
+    if (Array.isArray(fetchedChats) && fetchedChats.length > 0) {
+      setSavedChats(fetchedChats);
+      setHasChats(true); // Ensure button appears
+    } else {
+      setSavedChats([]);
+      setHasChats(false);
+    }
+
+    setLoadingChats(false);
   }
+
+  useEffect(() => {
+    setHasChats(savedChats.length > 0); // Ensure UI updates when chats change
+  }, [savedChats]); // Track savedChats updates
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
   }, [messages]); // Trigger when messages change
-  
 
   useEffect(() => {
-    if (showChatDialog) {
-      getChats();
-    }
-  }, [showChatDialog]);
+    getChats();
+  }, []);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -98,7 +120,7 @@ export default function Chatbot() {
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error("Error sending message:", error);
-      toast.error("Error sending message", {id: toastID});
+      toast.error("Error sending message", { id: toastID });
 
       setMessages((prev) => [
         ...prev,
@@ -110,55 +132,78 @@ export default function Chatbot() {
   };
 
   const handleSaveChat = async () => {
-    if (!chatTitle.trim()) {
-      toast.error("Please enter a title!", {id: toastID});
-      return;
-    }
-
-    const result = await saveChat(chatTitle, messages);
-    if (result.success) {
-      setShowSaveDialog(false);
-      setChatTitle("");
-      //      setSavedChats((prev) => [...prev, chatTitle]);
-      toast.success("Chat has been saved!" ,{id: toastID});
-    } else {
-      toast.error("Failed to save chat.", {id: toastID});
+    try {
+      if (!chatId && !chatTitle.trim()) {
+        toast.error("Please enter a title!");
+        return;
+      }
+  
+      console.log("Saving chat with ID:", chatId, "and messages:", messages); // Debugging
+  
+      const result = await saveChat(chatId, chatTitle, messages);
+  
+      if (result.success) {
+        setShowSaveDialog(false);
+  
+        if (!chatId) {
+          console.log("New chat saved with ID:", result.id); // Debugging
+          setChatId(result.id);
+        }
+  
+        toast.success("Chat saved successfully!");
+      } else {
+        console.error("Save error:", result.error); // Debugging
+        toast.error(result.error ? String(result.error) : "Failed to save chat.");
+      }
+    } catch (error) {
+      console.error("Error saving chat:", error);
+      toast.error("Something went wrong while saving.");
     }
   };
-
+  
+  
+  
   const handleChatClick = async (id: string) => {
     console.log("Selected Chat ID:", id); // Debugging
     if (!id) {
-      toast.error("Invalid chat ID.", {id: toastID});
+      toast.error("Invalid chat ID.", { id: toastID });
       return;
     }
-  
+
     const chatMessages = await fetchChatById(id);
-    console.log("Fetched Messages:", chatMessages); // Debugging
-  
+
+    if (chatMessages?.messages) {
+      const parsedMessages: Message[] = JSON.parse(chatMessages.messages);
+      setMessages(parsedMessages);
+    } else {
+      setMessages([]);
+    }
+
     if (chatMessages.length > 0) {
       setMessages(chatMessages);
       setShowChatDialog(false);
-      toast.success("Chat restored!", {id: toastID});
+      toast.success("Chat restored!", { id: toastID });
     } else {
-      toast.error("Length is less than 0", {id: toastID});
+      toast.error("Length is less than 0", { id: toastID });
     }
   };
-  
 
-const handleDeleteChat = async (chatId: string) => {
-  const result = await deleteChat(chatId); 
+  const handleDeleteChat = async (chatId: string) => {
+    const result = await deleteChat(chatId);
 
-  if (result.success) {
-    toast.success("Chat deleted successfully.",{id:toastID});
-    setSavedChats((prevChats) => prevChats.filter((chat) => chat.id !== chatId));
-  } else {
-    toast.error(`Failed to delete chat: ${result.error}`,{id:toastID});
-  }
-};
-
-
-  
+    if (result.success) {
+      toast.success("Chat deleted successfully.", { id: toastID });
+      setSavedChats((prevChats) =>
+        prevChats.filter((chat) => chat.id !== chatId)
+      );
+    } else {
+      toast.error(`Failed to delete chat: ${result.error}`, { id: toastID });
+    }
+  };
+  const handleNewChat = () => {
+    setMessages([]);
+    toast.success("Started a new chat!", { id: toastID });
+  };
 
   return (
     <div className="min-h-screen p-8">
@@ -167,90 +212,111 @@ const handleDeleteChat = async (chatId: string) => {
           Elva
           <MessagesSquare className="w-10 h-10" />
         </h1>
-        <div className="flex gap-2"> 
+        <div className="flex gap-2">
         {messages.length > 0 && (
-          <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Save className="mr-2 w-5 h-5" /> Save Chat
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogTitle>Save Conversation</DialogTitle>
-              <DialogDescription>
-                Enter a title for this chat session.
-              </DialogDescription>
 
-              <Input
-                value={chatTitle}
-                onChange={(e) => setChatTitle(e.target.value)}
-                placeholder="Enter chat title..."
-                className="mt-2"
-              />
+          <Button variant="outline" onClick={handleNewChat}>
+            <MessageSquarePlus className="mr-2 w-5 h-5" /> New Chat
+          </Button>
+        )}
+          {messages.length > 0 && (
+            <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Save className="mr-2 w-5 h-5" /> Save Chat
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogTitle>Save Conversation</DialogTitle>
+                <DialogDescription>
+                  Enter a title for this chat session.
+                </DialogDescription>
 
-              <DialogFooter>
+                <Input
+                  value={chatTitle}
+                  onChange={(e) => setChatTitle(e.target.value)}
+                  placeholder="Enter chat title..."
+                  className="mt-2"
+                />
+
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowSaveDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveChat} disabled={!chatTitle.trim()}>
+                    Save
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+
+          {hasChats && (
+            <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
+              <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  onClick={() => setShowSaveDialog(false)}
+                  onClick={() => setShowChatDialog(true)}
                 >
-                  Cancel
+                  <MessageSquareReply className="mr-2 w-5 h-5" /> View saved
+                  chats
                 </Button>
-                <Button onClick={handleSaveChat} disabled={!chatTitle.trim()}>
-                  Save
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
+              </DialogTrigger>
+              <DialogContent>
+                <DialogTitle>Your saved chats</DialogTitle>
+                <DialogDescription>
+                  Select any chat to continue:
+                </DialogDescription>
+                <div className="w-full">
+                  {loadingChats ? (
+                    <p className="text-gray-500 text-center">
+                      Loading saved chats...
+                    </p>
+                  ) : (
+                    savedChats.map((chat) => (
+                      <ul
+                        key={chat.id}
+                        className="flex justify-between items-center p-3 border-b"
+                      >
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleChatClick(chat.id)}
+                          className="cursor-pointer text-md"
+                        >
+                          {chat.title}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleDeleteChat(chat.id)}
+                          className="cursor-pointer p-2 hover:bg-gray-200 rounded-md"
+                        >
+                          <Trash2 className="text-red-600" />
+                        </Button>
+                      </ul>
+                    ))
+                  )}
+                </div>
 
-        <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
-          <DialogTrigger asChild>
-            <Button variant="outline" onClick={() => setShowChatDialog(true)}>
-              <MessageSquareReply className="mr-2 w-5 h-5" /> View saved chats
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogTitle>Your saved chats</DialogTitle>
-            <DialogDescription>Select any chat to continue:</DialogDescription>
-            <div className="w-full">
-              
-                {savedChats.map((chat) => (
-                  <ul
-                  key={chat.id}
-                  className="flex justify-between items-center p-3 border-b"
-                  >
+                <DialogFooter>
                   <Button
-                    variant="ghost"
-                    onClick={() => handleChatClick(chat.id)}
-                    className="cursor-pointer text-md"
+                    variant="outline"
+                    onClick={() => setShowChatDialog(false)}
                   >
-                    
-                    {chat.title}
-                    
+                    Cancel
                   </Button>
-                  <Button
-                  variant="ghost"
-                  onClick={() => handleDeleteChat(chat.id)}
-                  className="cursor-pointer p-2 hover:bg-gray-200 rounded-md">
-                    <Trash2 className="text-red-600" />
-                  </Button>
-                  
-              </ul>
-                ))}
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowChatDialog(false)}
-              >
-                Cancel
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
-      </div>
-      <Card ref={chatContainerRef} className="w-full h-[70vh] p-4 overflow-y-auto border">
+      <Card
+        ref={chatContainerRef}
+        className="w-full h-[70vh] p-4 overflow-y-auto border"
+      >
         <CardContent className="flex flex-col space-y-4">
           {messages.length === 0 ? (
             <p className="text-gray-500 text-center">
