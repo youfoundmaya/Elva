@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import {
   MessageSquareReply,
   MessagesSquare,
   Save,
+  Trash2,
 } from "lucide-react";
 import {
   Dialog,
@@ -19,7 +20,9 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { saveChat, fetchChats } from "@/app/actions/dashboard_actions";
+import { saveChat, fetchChats, fetchChatById, deleteChat } from "@/app/actions/dashboard_actions";
+import { useRef } from "react"; // Import useRef
+
 
 type Message = {
   role: "user" | "assistant";
@@ -37,12 +40,22 @@ export default function Chatbot() {
     []
   ); // State for saved chat titles
   const router = useRouter();
+  const toastID = useId();
 
   async function getChats() {
     const fetchedChats = await fetchChats();
     setSavedChats(fetchedChats || []);
     console.log(savedChats);
   }
+
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]); // Trigger when messages change
+  
 
   useEffect(() => {
     if (showChatDialog) {
@@ -85,6 +98,8 @@ export default function Chatbot() {
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error("Error sending message:", error);
+      toast.error("Error sending message", {id: toastID});
+
       setMessages((prev) => [
         ...prev,
         { role: "assistant", text: "Error generating response." },
@@ -96,7 +111,7 @@ export default function Chatbot() {
 
   const handleSaveChat = async () => {
     if (!chatTitle.trim()) {
-      toast.error("Please enter a title!");
+      toast.error("Please enter a title!", {id: toastID});
       return;
     }
 
@@ -105,15 +120,45 @@ export default function Chatbot() {
       setShowSaveDialog(false);
       setChatTitle("");
       //      setSavedChats((prev) => [...prev, chatTitle]);
-      toast.success("Chat has been saved!");
+      toast.success("Chat has been saved!" ,{id: toastID});
     } else {
-      toast.error("Failed to save chat.");
+      toast.error("Failed to save chat.", {id: toastID});
     }
   };
 
   const handleChatClick = async (id: string) => {
-    console.log(id);
+    console.log("Selected Chat ID:", id); // Debugging
+    if (!id) {
+      toast.error("Invalid chat ID.", {id: toastID});
+      return;
+    }
+  
+    const chatMessages = await fetchChatById(id);
+    console.log("Fetched Messages:", chatMessages); // Debugging
+  
+    if (chatMessages.length > 0) {
+      setMessages(chatMessages);
+      setShowChatDialog(false);
+      toast.success("Chat restored!", {id: toastID});
+    } else {
+      toast.error("Length is less than 0", {id: toastID});
+    }
   };
+  
+
+const handleDeleteChat = async (chatId: string) => {
+  const result = await deleteChat(chatId); 
+
+  if (result.success) {
+    toast.success("Chat deleted successfully.",{id:toastID});
+    setSavedChats((prevChats) => prevChats.filter((chat) => chat.id !== chatId));
+  } else {
+    toast.error(`Failed to delete chat: ${result.error}`,{id:toastID});
+  }
+};
+
+
+  
 
   return (
     <div className="min-h-screen p-8">
@@ -122,6 +167,7 @@ export default function Chatbot() {
           Elva
           <MessagesSquare className="w-10 h-10" />
         </h1>
+        <div className="flex gap-2"> 
         {messages.length > 0 && (
           <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
             <DialogTrigger asChild>
@@ -171,13 +217,22 @@ export default function Chatbot() {
                 {savedChats.map((chat) => (
                   <ul
                   key={chat.id}
+                  className="flex justify-between items-center p-3 border-b"
                   >
                   <Button
                     variant="ghost"
                     onClick={() => handleChatClick(chat.id)}
-                    className="cursor-pointer hover:bg-gray-200 p-3 outline-solid text-md"
+                    className="cursor-pointer text-md"
                   >
+                    
                     {chat.title}
+                    
+                  </Button>
+                  <Button
+                  variant="ghost"
+                  onClick={() => handleDeleteChat(chat.id)}
+                  className="cursor-pointer p-2 hover:bg-gray-200 rounded-md">
+                    <Trash2 className="text-red-600" />
                   </Button>
                   
               </ul>
@@ -194,7 +249,8 @@ export default function Chatbot() {
           </DialogContent>
         </Dialog>
       </div>
-      <Card className="w-full h-[70vh] p-4 overflow-y-auto border">
+      </div>
+      <Card ref={chatContainerRef} className="w-full h-[70vh] p-4 overflow-y-auto border">
         <CardContent className="flex flex-col space-y-4">
           {messages.length === 0 ? (
             <p className="text-gray-500 text-center">

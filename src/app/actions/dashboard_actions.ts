@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function saveNote(summary: string) {
-  const supabase = await createClient();
+const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -157,3 +157,40 @@ export async function deleteFlashcard(flashcardId : string){
     return data || []
 
   }; 
+  
+  export async function fetchChatById(chatId: string) {
+    try {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from("chats")
+        .select("messages")
+        .eq("id", chatId)
+        .single();
+  
+      console.log("Fetched Data from Supabase:", data); // Debugging
+  
+      if (error || !data) {
+        console.error("Error fetching chat:", error);
+        throw new Error("Failed to fetch chat");
+      }
+  
+      return Array.isArray(data.messages) ? data.messages : JSON.parse(data.messages);
+    } catch (error) {
+      console.error("Error fetching chat:", error);
+      return [];
+    }
+  }
+
+  export async function deleteChat(chatId: string) {
+    const supabase =  await createClient();
+  
+    const { error } = await supabase.from("chats").delete().eq("id", chatId);
+  
+    if (error) {
+      console.error("Failed to delete chat:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  }
+  
