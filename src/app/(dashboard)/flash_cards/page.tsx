@@ -31,6 +31,7 @@ const FlashCards = () => {
     { question: string; answer: string }[]
   >([]);
   const router = useRouter();
+  const [flashcardCount, setFlashcardCount] = useState(40);
 
   const [showDialog, setShowDialog] = useState(false);
   const [title, setTitle] = useState("");
@@ -40,7 +41,7 @@ const FlashCards = () => {
     setFlashcards([]);
 
     try {
-      const prompt = `Generate at least 40 high-quality flashcards from the following content. Each flashcard should have a "Question" and a short but precise "Answer". Use a structured JSON format as:
+      const prompt = `Generate exactly ${flashcardCount} high-quality flashcards from the following content. Each flashcard should have a "Question" and a short but precise "Answer". Use a structured JSON format as:
       [
         {"question": "Question 1?", "answer": "Answer 1"},
         {"question": "Question 2?", "answer": "Answer 2"},
@@ -243,6 +244,10 @@ const FlashCards = () => {
         Upload a DOCX, MD, TXT, or PDF file to prepare flashcards, or enter a
         topic in the text box.
       </p>
+      <br/>
+      <p>
+        Note: Minimum 20, and maximum 100 flashcards can be generated as of now.
+      </p>
 
       <div className="flex gap-5">
         <input
@@ -297,6 +302,7 @@ const FlashCards = () => {
             </AlertDialogContent>
           </AlertDialog>
         )}
+        <FlashcardSelector onChange={(num) => setFlashcardCount(num)} />
 
         <button
           onClick={() => generateFlashcards(inputText)}
@@ -342,5 +348,26 @@ const FlipCard = ({
     </motion.div>
   );
 };
+
+
+function FlashcardSelector({ onChange }: { onChange: (num: number) => void }) {
+  const [count, setCount] = useState(40); 
+
+  const updateCount = (value: number) => {
+    const newCount = Math.max(20, Math.min(100, count + value)); 
+    setCount(newCount);
+    onChange(newCount);
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button onClick={() => updateCount(-1)}>-</Button>
+      <span className="px-4 py-2 border rounded">{count}</span>
+      <Button onClick={() => updateCount(1)}>+</Button>
+    </div>
+  );
+}
+
+
 
 export default FlashCards;
