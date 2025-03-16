@@ -46,10 +46,11 @@ const FlashCards = () => {
         {"question": "Question 2?", "answer": "Answer 2"},
         ...
       ].
+      Return ONLY the JSON array. Do not include any other text or markdown.
       Content: \n\n${text}`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -61,14 +62,25 @@ const FlashCards = () => {
       );
 
       const data = await response.json();
-      const parsedFlashcards = JSON.parse(
-        data?.candidates?.[0]?.content?.parts?.[0]?.text || "[]"
-      );
+
+      let rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+      console.log("Raw AI Output:", rawText);
+
+      // Remove Markdown code block
+      rawText = rawText.replace(/^```json\n/, "").replace(/\n```$/, "");
+
+      try {
+        const parsedFlashcards = JSON.parse(rawText);
+        setFlashcards(parsedFlashcards);
+      toast.success("Flashcards generated successfully!");
+      } catch (error) {
+        console.error("Invalid JSON response:", rawText);
+        toast.error("AI response is not valid JSON. Try again.");
+      }
 
       /*  if (parsedFlashcards.length < 40) throw new Error("Insufficient flashcards generated"); */
 
-      setFlashcards(parsedFlashcards);
-      toast.success("Flashcards generated successfully!");
+      
     } catch (error) {
       console.error("Error generating flashcards:", error);
       toast.error("Failed to generate flashcards. Try again.");
@@ -222,13 +234,10 @@ const FlashCards = () => {
 
   return (
     <div className="min-h-screen p-8 flex flex-col items-center">
-
-<h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-  Prepare Flashcards
-  <SquareLibrary className="w-10 h-10" />
-</h1>
-
-      
+      <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+        Prepare Flashcards
+        <SquareLibrary className="w-10 h-10" />
+      </h1>
 
       <p className="text-gray-700 mb-6 text-center max-w-xl">
         Upload a DOCX, MD, TXT, or PDF file to prepare flashcards, or enter a
