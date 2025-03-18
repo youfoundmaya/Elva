@@ -32,12 +32,12 @@ const QuizGenerator = () => {
   const [quizInfo, setQuizInfo] = useState<{
     title: string;
     topic: string;
-    question: number;
+    num_questions: number;
     difficulty: string;
   }>({
     title: "",
     topic: "",
-    question: 0,
+    num_questions: 0,
     difficulty: "Beginner",
   });
   const [quiz, setQuiz] = useState<any>(null);
@@ -56,7 +56,7 @@ const QuizGenerator = () => {
   {
     "title": "Generated Quiz Title",
     "topic": "Relevant Quiz Topic",
-    "question": 40,
+    "num_questions": 40,
     "difficulty": "Beginner"
   }
   
@@ -67,7 +67,7 @@ const QuizGenerator = () => {
   {
     "title": "Mastering Object-Oriented Programming",
     "topic": "Computer Science",
-    "question": 40,
+    "num_questions": 40,
     "difficulty": "Beginner"
   }
   
@@ -131,7 +131,7 @@ const QuizGenerator = () => {
   async function generateQuiz(text: string, quizInfo: any) {
     try {
       console.log("Prompting gemini", quizInfo);
-      const prompt = `Generate exactly ${quizInfo.question} multiple-choice questions from the following content. 
+      const prompt = `Generate exactly ${quizInfo.num_questions} multiple-choice questions from the following content. 
           Each question should:
           - Be clear and concise.
           - Have a "question" (string).
@@ -178,7 +178,7 @@ const QuizGenerator = () => {
       let content = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
       if (!content || content.trim() === "[]") {
-        console.error("⚠️ No quiz generated, API response was empty:", content);
+        console.error("No quiz generated, API response was empty:", content);
         throw new Error("Quiz generation failed. Please try again.");
       }
 
@@ -322,7 +322,7 @@ const QuizGenerator = () => {
         quizInfo.title,
         quizInfo.topic,
         quizInfo.difficulty,
-        quizInfo.question
+        quizInfo.num_questions
       );
       if (!savedQuiz) {
         toast.error("Failed to save quiz.");
@@ -419,22 +419,25 @@ const QuizGenerator = () => {
                 </CardContent>
                 <CardDescription>
                   <CardContent>
-                    Number of questions: {quizInfo.question}
+                    Number of questions: {quizInfo.num_questions}
                     <br />
                     Difficulty: {quizInfo.difficulty}
                   </CardContent>
                 </CardDescription>
               </div>
+              
               <div className="flex flex-col items-end gap-4">
                 <button
                   className="px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition duration-300"
                   onClick={attemptQuiz}
+                  disabled={!quiz}
                 >
                   Attempt Quiz
                 </button>
                 <button
                   className="px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition duration-300"
                   onClick={handleSave}
+                  disabled={!quiz}
                 >
                   Save Quiz
                 </button>

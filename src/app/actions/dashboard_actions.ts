@@ -269,3 +269,46 @@ export async function saveQuestions(quizId: number, questions: any[]) {
 
   console.log("Questions saved successfully!");
 }
+
+export const fetchQuizzes = async () => {
+  const supabase = await createClient();
+  const user = await supabase.auth.getUser();
+  if (!user.data.user) return { error: 'User not authenticated' };
+
+  const { data, error } = await supabase
+    .from('quizzes')
+    .select('*')
+    .eq('user_id', user.data.user.id);
+
+  if (error) {
+    console.error('Error fetching quizzes:', error);
+    return { error: error.message };
+  }
+
+return data || [];
+
+};
+
+export const fetchQuizQuestions = async (quizId: string) => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('questions')
+    .select('*')
+    .eq('quiz_id', quizId); 
+
+  if (error) {
+    console.error('Error fetching questions:', error);
+    return  error ;
+  }
+
+  return data ;
+};
+
+export const deleteQuiz = async (quizId: string) => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("quizzes")
+    .delete()
+    .eq("id", quizId); // Delete where id matches
+  return {error}
+}

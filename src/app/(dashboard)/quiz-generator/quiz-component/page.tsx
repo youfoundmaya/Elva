@@ -1,41 +1,35 @@
 "use client";
 import { saveQuestions, saveQuiz } from "@/app/actions/dashboard_actions";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@radix-ui/react-separator";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface QuizQuestion {
-  question: string;
-  options: { [key: string]: string };
-  correct_option: string;
-}
+
 const AttemptQuiz = () => {
   const router = useRouter();
-  const [quiz, setQuiz] = useState<any | null>(null);
+    const [quiz, setQuiz] = useState<any[]|null>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [quizInfo, setQuizInfo] = useState<{
     title: string;
     topic: string;
-    question: number;
+    num_questions: number;
     difficulty: string;
   }>({
     title: "",
     topic: "",
-    question: 0,
+    num_questions: 0,
     difficulty: "Beginner",
   });
-
   useEffect(() => {
     const storedQuiz = localStorage.getItem("quiz");
     if (storedQuiz) {
       setQuiz(JSON.parse(storedQuiz));
     } else {
       console.error("Quiz data not found!");
-      router.push("/dashboard"); // Redirect if no quiz is found
+      router.push("/dashboard"); 
     }
     const storedInfo = localStorage.getItem("quizInfo");
     if (storedInfo) {
@@ -45,9 +39,14 @@ const AttemptQuiz = () => {
     }
   }, []);
 
-  if (!quiz) return <p>Loading quiz...</p>;
+  if (!quiz || quiz.length === 0)
+    return (
+      <p className="ex flex-col items-center justify-center h-screen">
+        Loading quiz...
+      </p>
+    );
 
-  const currentQuestion = quiz[currentIndex];
+  const currentQuestion = quiz[currentIndex] || null;
 
   const handleOptionClick = (key: string) => {
     setSelectedOption(key);
@@ -64,7 +63,7 @@ const AttemptQuiz = () => {
         quizInfo.title,
         quizInfo.topic,
         quizInfo.difficulty,
-        quizInfo.question
+        quizInfo.num_questions
       );
       if (!savedQuiz) {
         toast.error("Failed to save quiz.");
@@ -99,7 +98,7 @@ const AttemptQuiz = () => {
         <div className="flex flex-col gap-5">
           <h1 className="text-4xl font-bold">{quizInfo.title}</h1>
           <p className="text-xl font-bold">
-            Question: {currentIndex + 1}/{quizInfo.question}
+            Question: {currentIndex + 1}/{quizInfo.num_questions}
           </p>
         </div>
         <div className="flex flex-col items-end gap-5">
@@ -108,7 +107,9 @@ const AttemptQuiz = () => {
         </div>
       </div>
       <div className="flex flex-col items-center justify-center h-auto p-8">
-        <h2 className="text-2xl font-bold mb-6">{currentQuestion?.question}</h2>
+        <h2 className="text-2xl font-bold mb-6">
+          {currentQuestion ? currentQuestion.question : "Loading question..."}
+        </h2>
 
         <div className="w-full max-w-md space-y-4">
           {Object.entries(currentQuestion.options).map(([key, option]) => {
@@ -144,7 +145,7 @@ const AttemptQuiz = () => {
               setIsCorrect(null);
             }}
             disabled={currentIndex === 0}
-            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-700 disabled:text-white rounded-lg text-bold"
+            className="px-6 py-2 bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-700 disabled:text-white rounded-lg text-bold"
           >
             Previous
           </button>
@@ -156,7 +157,7 @@ const AttemptQuiz = () => {
               setIsCorrect(null);
             }}
             disabled={currentIndex === quiz.length - 1}
-            className="px-6 py-2 text-bold bg-green-500 hover:bg-green-600 disabled:bg-gray-700 disabled:text-white rounded-lg"
+            className="px-6 py-2 text-bold text-white bg-green-500 hover:bg-green-600 disabled:bg-gray-700 disabled:text-white rounded-lg"
           >
             Next
           </button>
