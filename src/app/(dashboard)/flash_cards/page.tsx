@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BookCopy, Library, SquareLibrary } from "lucide-react";
+import { SquareLibrary } from "lucide-react";
 
 const FlashCards = () => {
   const [inputText, setInputText] = useState<string>("");
@@ -241,11 +241,10 @@ const FlashCards = () => {
       </h1>
 
       <p className="text-gray-700 mb-6 text-center max-w-xl">
-        Upload a DOCX, MD, TXT, or PDF file to prepare flashcards, or enter a
-        topic in the text box.
+        Upload a DOCX, MD, TXT, or PDF file to prepare flashcards.
       </p>
       <br/>
-      <p>
+      <p className="text-gray-900 mb-6 text-center max-w-xl">
         Note: Minimum 20, and maximum 100 flashcards can be generated as of now.
       </p>
 
@@ -259,7 +258,7 @@ const FlashCards = () => {
         <textarea
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="Or paste text here..."
+          placeholder="Or Enter a topic here!"
           className="w-full p-4 border rounded-lg resize-none shadow-sm focus:ring-2 focus:ring-blue-500"
           rows={3}
         />

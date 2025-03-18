@@ -167,9 +167,6 @@ export async function deleteFlashcard(flashcardId : string){
     }
   }
   
-  
-  
-
   export const fetchChats = async () => {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -219,3 +216,56 @@ export async function deleteFlashcard(flashcardId : string){
     return { success: true };
   }
   
+  
+
+export async function saveQuiz(title: string, topic: string, difficulty: string, numQuestions: number) {
+  const supabase = await createClient();
+  const user = await supabase.auth.getUser(); 
+  if (!user.data.user) {
+    throw new Error("User not authenticated");
+  }
+  const { data: quiz, error } = await supabase
+    .from("quizzes")
+    .insert([{ title, topic, difficulty, num_questions: numQuestions, user_id:user.data.user.id }])
+    .select()
+    .single()
+    
+  if (error) {
+    console.error("Error saving quiz:", error);
+    return error;
+  }else {
+    console.log("Quiz saved:", quiz);
+    return quiz
+  }
+}
+
+export async function saveQuestions(quizId: number, questions: any[]) {
+  if (!questions || !Array.isArray(questions) || questions.length === 0) {
+    console.error("Invalid questions array:", questions);
+    throw new Error("No valid questions to save.");
+  }
+
+  const formattedQuestions = questions.map((q) => ({
+    quiz_id: quizId, // Foreign key from quizzes table
+    question_text: q.question, // Mapping from original object
+    option_a: q.options.A, // Extract options properly
+    option_b: q.options.B,
+    option_c: q.options.C,
+    option_d: q.options.D,
+    correct_option: q.correct_option, // Already formatted
+  }));
+
+  console.log("Formatted Questions:", formattedQuestions);
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("questions")
+    .insert(formattedQuestions);
+
+  if (error) {
+    console.error("Error saving questions:", error);
+    throw new Error("Failed to save questions.");
+  }
+
+  console.log("Questions saved successfully!");
+}
