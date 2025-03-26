@@ -204,7 +204,9 @@ const Summary: React.FC = () => {
         <ArrowDownAZ className="w-10 h-10" />      
       </h1>
       <p className="text-gray-700 mb-6 text-center max-w-xl">
-        Upload a DOCX, MD, TXT, or PDF file to generate a summary.
+        Upload a DOCX, MD, TXT, or PDF file to prepare quizzes
+        <br />
+        Or simply type the topic!
       </p>
       <div className="w-full max-w-3xl bg-white shadow-lg rounded-2xl p-8 space-y-6">
         {/* File Upload Input */}

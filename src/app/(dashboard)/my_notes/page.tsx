@@ -159,8 +159,7 @@ const MyNotes = () => {
       toast.error("Failed to delete quiz.");
     } finally {
       setLoading(false);
-      toast.success("Quiz Deleted!");
-      router.push("/my_notes");
+      router.refresh();
     }
   }
 
@@ -194,40 +193,47 @@ const MyNotes = () => {
         ) : (
           <>
             <TabsContent value="summaries">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {notes.map((note) => {
-                  const { heading, content } = extractHeadingAndContent(
-                    note.summary
-                  );
-
-                  return (
-                    <div
-                      key={note.id}
-                      onClick={() => handleNoteClick(note.id, heading)}
-                      className="p-4 border rounded-lg shadow-md bg-white hover:shadow-lg transition-shadow cursor-pointer"
-                    >
-                      <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                        {heading}
-                      </h2>
-                      <p className="text-gray-700 text-sm line-clamp-3">
-                        {content}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
+              {notes.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {notes.map((note) => {
+                    const { heading, content } = extractHeadingAndContent(note.summary);
+                    return (
+                      <div
+                        key={note.id}
+                        onClick={() => handleNoteClick(note.id, heading)}
+                        className="p-4 border rounded-lg shadow-md bg-white hover:shadow-lg transition-shadow cursor-pointer"
+                      >
+                        <h2 className="text-lg font-semibold text-gray-900 mb-2">
+                          {heading}
+                        </h2>
+                        <p className="text-gray-700 text-sm line-clamp-3">{content}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] w-full">
+                  <p className="text-gray-500 text-center mb-4">No summaries found.</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push('/summary')}
+                  >
+                    Create Summary Notes
+                  </Button>
+                </div>
+              )}
             </TabsContent>
+
 
             {/* Flashcards Tab */}
             <TabsContent value="flashcards">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {flashcards.length > 0 ? (
-                  flashcards.map((set) => (
+              {flashcards.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                  {flashcards.map((set) => (
                     <div
                       key={set.id}
-                      onClick={() =>
-                        router.push(`/my_notes/flashcard?id=${set.id}`)
-                      }
+                      onClick={() => router.push(`/my_notes/flashcard?id=${set.id}`)}
                       className="p-4 border rounded-lg shadow-md bg-white hover:shadow-lg transition-shadow cursor-pointer"
                     >
                       <h2 className="text-l font-semibold text-gray-900 text-center">
@@ -235,25 +241,31 @@ const MyNotes = () => {
                       </h2>
                     </div>
                   ))
-                ) : (
-                  <p className="text-gray-500 text-center">
-                    No flashcards found.
-                  </p>
-                )}
-              </div>
+                  }
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] w-full">
+                  <p className="text-gray-500 text-center mb-4">No flashcards found.</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push('/flash_cards')}
+                  >
+                    Create a Flashcard Set
+                  </Button>
+                </div>
+              )}
             </TabsContent>
 
             {/* Quizzes Tab */}
             <TabsContent value="quizzes">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                {loading && (
-                  <div className="text-center text-lg font-bold">
-                    Loading...
-                  </div>
-                )}
+              {loading && (
+                <div className="text-center text-lg font-bold">Loading...</div>
+              )}
 
-                {quiz.length > 0 ? (
-                  quiz.map((quiz) => (
+              {quiz.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+
+                  {quiz.map((quiz) => (
                     <div
                       key={quiz.id}
                       onClick={() => handleQuizClick(quiz.id)}
@@ -261,15 +273,9 @@ const MyNotes = () => {
                     >
                       <div className="flex justify-between items-center px-4 w-full">
                         <div>
-                          <h2 className="text-lg font-semibold">
-                            {quiz.title}
-                          </h2>
-                          <p className="text-gray-600">
-                            {quiz.topic} - {quiz.difficulty}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            Total questions: {quiz.num_questions}
-                          </p>
+                          <h2 className="text-lg font-semibold">{quiz.title}</h2>
+                          <p className="text-gray-600">{quiz.topic} - {quiz.difficulty}</p>
+                          <p className="text-sm text-gray-500">Total questions: {quiz.num_questions}</p>
                         </div>
 
                         <div className="bottom-2 right-2">
@@ -280,24 +286,19 @@ const MyNotes = () => {
                                 className="text-red-600 hover:text-red-700"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                  <Trash2/>
+                                <Trash2 />
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Are you sure?
-                                </AlertDialogTitle>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  This action cannot be undone. Do you want to
-                                  permanently delete this quiz?
+                                  This action cannot be undone. Do you want to permanently delete this quiz?
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleQuizDelete(quiz.id)}
-                                >
+                                <AlertDialogAction onClick={() => handleQuizDelete(quiz.id)}>
                                   Delete Permanently
                                 </AlertDialogAction>
                               </AlertDialogFooter>
@@ -307,10 +308,20 @@ const MyNotes = () => {
                       </div>
                     </div>
                   ))
-                ) : (
-                  <p className="text-gray-500 text-center">No quizzes found.</p>
-                )}
-              </div>
+                  }
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] w-full">
+                  <p className="text-gray-500 text-center mb-4">No quizzes found.</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push('/quiz-generator')}
+                  >
+                    Create a Quiz MCQ's Set
+                  </Button>
+                </div>
+              )}
+
             </TabsContent>
           </>
         )}

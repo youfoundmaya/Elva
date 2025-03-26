@@ -1,6 +1,17 @@
 "use client";
 import { saveQuestions, saveQuiz } from "@/app/actions/dashboard_actions";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -86,10 +97,27 @@ const AttemptQuiz = () => {
   return (
     <div>
       <div className="flex gap-4 mb-6">
-        <Button variant="outline" onClick={() => router.back()}>
-          Back
-        </Button>
 
+      <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline">Cancel</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                If you have not saved this quiz, then it will be deleted forever.
+                You can always regenerate this Quiz!
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Return to Quiz</AlertDialogCancel>
+              <AlertDialogAction onClick={() => router.back()}>Cancel the quiz</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        
         <Button variant="outline" onClick={handleSave}>
           Save Quiz
         </Button>

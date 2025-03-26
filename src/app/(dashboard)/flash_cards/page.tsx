@@ -241,7 +241,9 @@ const FlashCards = () => {
       </h1>
 
       <p className="text-gray-700 mb-6 text-center max-w-xl">
-        Upload a DOCX, MD, TXT, or PDF file to prepare flashcards.
+        Upload a DOCX, MD, TXT, or PDF file to prepare quizzes
+        <br />
+        Or simply type the topic!
       </p>
       <br/>
       <p className="text-gray-900 mb-6 text-center max-w-xl">
@@ -348,21 +350,57 @@ const FlipCard = ({
   );
 };
 
-
 function FlashcardSelector({ onChange }: { onChange: (num: number) => void }) {
-  const [count, setCount] = useState(40); 
+  const [count, setCount] = useState("40"); // Keep as string for flexible input
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    // Allow empty input or numbers within range
+    if (value === "" || (/^\d+$/.test(value) && Number(value) <= 100)) {
+      setCount(value);
+      if (value !== "") onChange(Number(value)); // Update in real time
+    }
+  };
+
+  const handleBlur = () => {
+    let num = Number(count);
+    if (count === "" || num < 10) num = 10;
+    if (num > 100) num = 100;
+
+    setCount(num.toString());
+    onChange(num);
+  };
 
   const updateCount = (value: number) => {
-    const newCount = Math.max(20, Math.min(100, count + value)); 
-    setCount(newCount);
+    const newCount = Math.max(10, Math.min(100, Number(count) + value));
+    setCount(newCount.toString());
     onChange(newCount);
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <Button onClick={() => updateCount(-1)}>-</Button>
-      <span className="px-4 py-2 border rounded">{count}</span>
-      <Button onClick={() => updateCount(1)}>+</Button>
+    <div className="flex items-center gap-4">
+      <Button 
+        onClick={() => updateCount(-1)}
+        className="px-4 py-2 rounded-lg text-lg bg-gray-800 text-white hover:bg-gray-700"
+      >
+        −
+      </Button>
+
+      <input
+        type="text"
+        value={count}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        className="w-20 h-10 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+
+      <Button 
+        onClick={() => updateCount(1)}
+        className="px-4 py-2 rounded-lg text-lg bg-gray-800 text-white hover:bg-gray-700"
+      >
+        +
+      </Button>
     </div>
   );
 }

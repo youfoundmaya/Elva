@@ -1,7 +1,7 @@
 "use client";
 import { Grid2X2Check, SquareLibrary } from "lucide-react";
 import { getDocument } from "pdfjs-dist";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import "pdfjs-dist/build/pdf.worker.mjs";
 import mammoth from "mammoth";
 import PizZip from "pizzip";
@@ -21,10 +21,10 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { saveQuestions, saveQuiz } from "@/app/actions/dashboard_actions";
 import { useRouter } from "next/navigation";
+
 
 const QuizGenerator = () => {
   const [inputText, setInputText] = useState<string>("");
@@ -44,6 +44,7 @@ const QuizGenerator = () => {
   const [difficulty, setDifficulty] = useState("Beginner");
   const [questionCount, setQuestionCount] = useState(40);
 
+  const toastId = useId();
   const router = useRouter();
 
   const generateQuizInfo = async (text: string) => {
@@ -113,13 +114,13 @@ const QuizGenerator = () => {
 
   const handleGenerateQuizInfo = async () => {
     if (!inputText.trim()) {
-      toast.error("Enter some text to generate the quiz info!");
+      toast.error("Enter some text to generate the quiz info!",{id: toastId});
       return;
     }
     setLoading(true);
     const generatedQuizInfo = await generateQuizInfo(inputText);
     if (!generatedQuizInfo.title) {
-      toast.error("Quiz generation failed.");
+      toast.error("Quiz generation failed.",{id: toastId});
       setLoading(false);
       return;
     }
@@ -218,16 +219,12 @@ const QuizGenerator = () => {
         } else if (file.name.endsWith(".md") || file.name.endsWith(".txt")) {
           extractedText = e.target.result as string;
         } else {
-          toast.error("Unsupported File", {
-            description: "Please upload a DOCX, MD, TXT, or PDF file.",
-          });
+          toast.error("Unsupported File", {id: toastId});
           return;
         }
       } catch (error) {
         console.error("Error parsing file:", error);
-        toast.error("File Processing Error", {
-          description: "Failed to extract text from the file.",
-        });
+        toast.error("File Processing Error", {id: toastId});
         return;
       }
       setInputText(extractedText.trim());
@@ -314,7 +311,7 @@ const QuizGenerator = () => {
 
   const handleSave = async () => {
     if (!quiz) {
-      toast.error("No quiz available to save!");
+      toast.error("No quiz available to save!",{id: toastId});
       return;
     }
     try {
@@ -325,20 +322,20 @@ const QuizGenerator = () => {
         quizInfo.num_questions
       );
       if (!savedQuiz) {
-        toast.error("Failed to save quiz.");
+        toast.error("Failed to save quiz.",{id: toastId});
         return;
       }
       console.log(savedQuiz.id)
       if (savedQuiz && savedQuiz.id) {
         console.log("Quiz saved with ID:", savedQuiz.id);
         await saveQuestions(savedQuiz.id, quiz);
-        toast.success("Quiz and questions saved successfully!");
+        toast.success("Quiz and questions saved successfully!",{id: toastId});
       } else {
-        toast.error("Failed to save questions.");
+        toast.error("Failed to save questions.",{id: toastId});
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error;
+      toast.error("An error has occured, try again!",{id: toastId});
     }
   };
 
@@ -357,11 +354,14 @@ const QuizGenerator = () => {
 
       <p className="text-gray-700 mb-6 text-center max-w-xl">
         Upload a DOCX, MD, TXT, or PDF file to prepare quizzes
+        <br />
+        Or simply type the topic!
       </p>
-      <br />
+      
       <p className="text-gray-900 mb-6 text-center max-w-xl">
         Note: Minimum 20, and maximum 100 questions can be generated as of now.
       </p>
+
 
       <div className="flex gap-5">
         <input
@@ -407,7 +407,7 @@ const QuizGenerator = () => {
         </button>
       </div>
       <div className="container max-w-xl p-5">
-        {quizInfo.title.length > 0 && (
+        {quizInfo.title.length > 0 && toast.success("Your quiz will be ready in a few seconds.",{id: toastId}) && (
           <Card className="flex flex-col justify-center max-h-lg">
             <div className="flex justify-between items-center px-4 w-full">
               <div>
@@ -428,14 +428,14 @@ const QuizGenerator = () => {
               
               <div className="flex flex-col items-end gap-4">
                 <button
-                  className="px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition duration-300"
+                  className="px-6 py-3 bg-black text-white disabled:bg-gray-500 font-semibold rounded-lg shadow-md hover:bg-gray-800 transition duration-300"
                   onClick={attemptQuiz}
                   disabled={!quiz}
                 >
                   Attempt Quiz
                 </button>
                 <button
-                  className="px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition duration-300"
+                  className="px-6 py-3 bg-black text-white disabled:bg-gray-500 font-semibold rounded-lg shadow-md hover:bg-gray-800 transition duration-300"
                   onClick={handleSave}
                   disabled={!quiz}
                 >
@@ -443,6 +443,9 @@ const QuizGenerator = () => {
                 </button>
               </div>
             </div>
+            <CardFooter className="flex flex-col items-center justify-center">
+            You can also save the quiz after attempting it!
+            </CardFooter>
           </Card>
         )}
       </div>
@@ -450,22 +453,61 @@ const QuizGenerator = () => {
   );
 };
 
+
 function NumberSelector({ onChange }: { onChange: (num: number) => void }) {
-  const [count, setCount] = useState(40);
-
-  const updateCount = (value: number) => {
-    const newCount = Math.max(20, Math.min(100, count + value));
-    setCount(newCount);
-    onChange(newCount);
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <Button onClick={() => updateCount(-1)}>-</Button>
-      <span className="px-4 py-2 border rounded">{count}</span>
-      <Button onClick={() => updateCount(1)}>+</Button>
-    </div>
-  );
-}
+    const [count, setCount] = useState("40"); // Keep as string for flexible input
+  
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+  
+      // Allow empty input or numbers within range
+      if (value === "" || (/^\d+$/.test(value) && Number(value) <= 100)) {
+        setCount(value);
+        if (value !== "") onChange(Number(value)); // Update in real time
+      }
+    };
+  
+    const handleBlur = () => {
+      let num = Number(count);
+      if (count === "" || num < 10) num = 10;
+      if (num > 100) num = 100;
+  
+      setCount(num.toString());
+      onChange(num);
+    };
+  
+    const updateCount = (value: number) => {
+      const newCount = Math.max(10, Math.min(100, Number(count) + value));
+      setCount(newCount.toString());
+      onChange(newCount);
+    };
+  
+    return (
+      <div className="flex items-center gap-4">
+        <Button 
+          onClick={() => updateCount(-1)}
+          className="px-4 py-2 rounded-lg text-lg bg-gray-800 text-white hover:bg-gray-700"
+        >
+          −
+        </Button>
+  
+        <input
+          type="text"
+          value={count}
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+          className="w-20 h-10 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+  
+        <Button 
+          onClick={() => updateCount(1)}
+          className="px-4 py-2 rounded-lg text-lg bg-gray-800 text-white hover:bg-gray-700"
+        >
+          +
+        </Button>
+      </div>
+    );
+  }
+  
 
 export default QuizGenerator;
