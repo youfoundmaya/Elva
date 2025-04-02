@@ -135,7 +135,7 @@ const AttemptQuiz = () => {
         </div>
       </div>
       <div className="flex flex-col items-center justify-center h-auto p-8">
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-bold mb-6 text-center">
           {currentQuestion ? currentQuestion.question : "Loading question..."}
         </h2>
 
