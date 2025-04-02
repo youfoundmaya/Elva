@@ -142,8 +142,9 @@ const QuizGenerator = () => {
           - The difficulty must be **STRICTLY**: "${quizInfo.difficulty}".
 
           🚨 DO NOT include explanations or any extra text.
+          🚨 THE CORRECT OPTION CAN EITHER BE A, B, C OR D, NOT ALWAYS THE ONE MENTIONED IN THE EXAMPLE.
           🚨 ONLY return a JSON array like this:
-
+        
           [
             {
               "question": "What is the capital of France?",
@@ -169,7 +170,7 @@ const QuizGenerator = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.7, maxOutputTokens: 4096 },
+            generationConfig: { temperature: 0.7, maxOutputTokens: 100000 },
           }),
         }
       );
@@ -177,6 +178,7 @@ const QuizGenerator = () => {
       console.log("Raw API Response:", JSON.stringify(data, null, 2)); // Log full response
 
       let content = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      content = content.replace(/```(?:json)?\n?|```/g, "").trim();
 
       if (!content || content.trim() === "[]") {
         console.error("No quiz generated, API response was empty:", content);
@@ -359,7 +361,7 @@ const QuizGenerator = () => {
       </p>
       
       <p className="text-gray-900 mb-6 text-center max-w-xl">
-        Note: Minimum 20, and maximum 100 questions can be generated as of now.
+        Note: Minimum 10, and maximum 80 questions can be generated as of now.
       </p>
 
 
@@ -461,7 +463,7 @@ function NumberSelector({ onChange }: { onChange: (num: number) => void }) {
       const value = e.target.value;
   
       // Allow empty input or numbers within range
-      if (value === "" || (/^\d+$/.test(value) && Number(value) <= 100)) {
+      if (value === "" || (/^\d+$/.test(value) && Number(value) <= 80)) {
         setCount(value);
         if (value !== "") onChange(Number(value)); // Update in real time
       }
@@ -470,14 +472,14 @@ function NumberSelector({ onChange }: { onChange: (num: number) => void }) {
     const handleBlur = () => {
       let num = Number(count);
       if (count === "" || num < 10) num = 10;
-      if (num > 100) num = 100;
+      if (num > 80) num = 80;
   
       setCount(num.toString());
       onChange(num);
     };
   
     const updateCount = (value: number) => {
-      const newCount = Math.max(10, Math.min(100, Number(count) + value));
+      const newCount = Math.max(10, Math.min(80, Number(count) + value));
       setCount(newCount.toString());
       onChange(newCount);
     };
