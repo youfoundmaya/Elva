@@ -44,7 +44,7 @@ const navItems =  [
     icon: BotMessageSquare 
   },
   {
-    title: "Quiz Generator",
+    title: "Quiz Generator: MCQ",
     url: "/quiz-generator",
     icon: SquareStack
   },

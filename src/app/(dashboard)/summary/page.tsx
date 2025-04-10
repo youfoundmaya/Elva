@@ -13,6 +13,7 @@ import remarkGfm from "remark-gfm";
 import { saveNote } from "@/app/actions/dashboard_actions";
 import { redirect } from "next/navigation";
 import { ArrowDownAZ, SpellCheck } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 const Summary: React.FC = () => {
   const [inputText, setInputText] = useState<string>("");
@@ -203,7 +204,12 @@ const Summary: React.FC = () => {
         Smart Summary
         <ArrowDownAZ className="w-10 h-10" />      
       </h1>
-      <p className="text-gray-700 mb-6 text-center max-w-xl">
+      <Card>
+      <p className="text-gray-700 m-4 text-center max-w-xl">
+      Automatically generate summaries from your documents or topics. 
+      </p>
+      </Card>
+      <p className="text-gray-700 m-3 text-center max-w-xl">
         Upload a DOCX, MD, TXT, or PDF file to prepare quizzes
         <br />
         Or simply type the topic!
