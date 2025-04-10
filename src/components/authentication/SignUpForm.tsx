@@ -65,6 +65,9 @@ const SignUpForm = ({ className }: { className?: string }) => {
       confirmPassword: ""
     },
   });
+  const emailValue = form.watch("email");
+  const isEmailEmpty = !emailValue || emailValue.trim() === "";
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const toastID = 'signup-toast';
@@ -131,6 +134,7 @@ const SignUpForm = ({ className }: { className?: string }) => {
           <FormField
             control={form.control}
             name="password"
+            disabled={isEmailEmpty}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Password</FormLabel>
@@ -144,6 +148,7 @@ const SignUpForm = ({ className }: { className?: string }) => {
           <FormField
             control={form.control}
             name="confirmPassword"
+            disabled={isEmailEmpty}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Confirm Password</FormLabel>

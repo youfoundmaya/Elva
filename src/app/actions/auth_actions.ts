@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { supabaseAdmin } from "@/lib/supabase/supabaseAdmin"; // or wherever you placed it
 
 interface AuthResponse {
   error: null | string;
@@ -60,19 +61,32 @@ export async function SignUp(formData: FormData): Promise<AuthResponse> {
 }
 
 export async function Login(formData: FormData): Promise<AuthResponse> {
-  const supabase = await createClient();
+  const supabase = await createClient(); // regular SSR client
 
-  const data = {
-    email: formData.get("email") as string,
-    password: formData.get("password") as string,
-  };
-  const { data: loginData, error } = await supabase.auth.signInWithPassword(
-    data
-  );
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+
+  const { data: loginData, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error || !loginData?.user || !loginData?.session) {
+    return {
+      error: error?.message || "Login failed",
+      success: false,
+      data: null,
+    };
+  }
+
+  const userId = loginData.user.id;
+
+  await supabaseAdmin.auth.admin.signOut(userId,"global");
+
   return {
-    error: error?.message || "There was an error while logging in.",
-    success: !error,
-    data: loginData || null,
+    error: null,
+    success: true,
+    data: loginData,
   };
 }
 
@@ -104,8 +118,8 @@ export async function resetPassword(values: {
   const supabase = await createClient();
 
   const { data: resetpasswordData, error } =
-    await supabase.auth.resetPasswordForEmail(values.email); 
-  if (!error){
+    await supabase.auth.resetPasswordForEmail(values.email);
+  if (!error) {
     await supabase.auth.signOut();
   }
   return {
