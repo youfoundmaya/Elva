@@ -143,6 +143,9 @@ const QuizGenerator = () => {
 
           🚨 DO NOT include explanations or any extra text.
           🚨 THE CORRECT OPTION CAN EITHER BE A, B, C OR D, NOT ALWAYS THE ONE MENTIONED IN THE EXAMPLE.
+          🚨 DO NOT MAKE THE QUESTIONS REDUNDANT. ALL QUESTIONS SHOULD BE UNIQUE.
+          🚨 QUESTIONS SHOULD BE STRICTLY OF THE DIFFICULTY MENTIONED ABOVE.
+          🚨 ONLY GENERATE EXACTLY ${quizInfo.num_questions}
           🚨 ONLY return a JSON array like this:
         
           [

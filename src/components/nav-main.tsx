@@ -54,11 +54,6 @@ const navItems =  [
     icon: BookCopy
   },
   {
-    title: "Learning Analytics",
-    url: "/analytics",
-    icon: ChartColumn
-  },
-  {
     title: "Settings",
     url: "/settings",
     icon: Settings2
