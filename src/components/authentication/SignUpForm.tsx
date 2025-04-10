@@ -67,26 +67,37 @@ const SignUpForm = ({ className }: { className?: string }) => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    toast.loading("Signing up...",{id: toastID})
-    setLoading(true)
-    const formData = new FormData;
-    formData.append('username',values.username)
-    formData.append('email',values.email)
-    formData.append('password',values.password)
-
-    const { success, error } = await SignUp(formData)
-    if (!success){
-      setLoading(false)
-      toast.error(String(error), {id:toastID})
+    const toastID = 'signup-toast';
+    toast.loading("Signing up...", { id: toastID });
+    setLoading(true);
+  
+    const formData = new FormData();
+    formData.append('username', values.username);
+    formData.append('email', values.email);
+    formData.append('password', values.password);
+  
+    try {
+      const { success, error } = await SignUp(formData);
+  
+      if (!success) {
+        if (error === "Email already in use.") {
+          toast.error("You already have an account. Try logging in instead.", { id: toastID });
+        } else {
+          toast.error(String(error), { id: toastID });
+        }
+      } else {
+        toast.success("Signed up successfully. Please confirm your email.", { id: toastID });
+        redirect('/login');
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      toast.error("Unexpected error during signup", { id: toastID });
+    } finally {
+      setLoading(false);
     }
-    else{
-      setLoading(false)
-      toast.success('Signed up successfully, please confirm your email address.', {id:toastID})
-      redirect('/login')
-    }
-    setLoading(false)
-    console.log(values);
   }
+  
+
   return (
     <div className={cn("grid gap-6", className)}>
       <Form {...form}>
