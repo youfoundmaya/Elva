@@ -104,7 +104,10 @@ export async function resetPassword(values: {
   const supabase = await createClient();
 
   const { data: resetpasswordData, error } =
-    await supabase.auth.resetPasswordForEmail(values.email);
+    await supabase.auth.resetPasswordForEmail(values.email); 
+  if (!error){
+    await supabase.auth.signOut();
+  }
   return {
     error:
       error?.message || "There was an error sending the reset password email.",
