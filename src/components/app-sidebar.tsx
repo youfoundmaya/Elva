@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar"
 import { createClient } from "@/lib/supabase/server"
 import { NavUser } from "./nav-user"
+import StickyNotesWidget from "./StickyNotesWidget"
 
 export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const supabase = await createClient();

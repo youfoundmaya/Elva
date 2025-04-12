@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { format } from "date-fns"
 import { useEffect, useState } from "react"
-import { Pencil, Trash } from "lucide-react"
+import { Pencil, Plus, Trash } from "lucide-react"
 
 interface Todo {
     id: number
@@ -67,8 +67,8 @@ export default function TodoWidget() {
     // Remove todos at midnight using a timer
     useEffect(() => {
         const now = new Date()
-        const millisTillMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime()
-
+       // const millisTillMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime()
+        const millisTillMidnight = Date.now() + 2 * 60 * 1000;
         const timeout = setTimeout(() => {
             localStorage.removeItem("todos")
             setTodos([]) // Clear todos
@@ -114,67 +114,72 @@ export default function TodoWidget() {
     }
 
     return (
-<div className="absolute top-4 right-4 w-80">
-  <Card className="min-h-64 flex flex-col">
-    <CardHeader className="flex justify-between items-center">
-      <CardTitle>todo: {today}</CardTitle>
-      <CardDescription>Daily Todo</CardDescription>
-    </CardHeader>
+        <div className="w-80">
 
-    {/* Scrollable/expanding todo list area */}
-    <CardContent className="flex-1 overflow-y-auto space-y-4">
-      {todos.map((todo) => (
-        <div key={todo.id} className="flex items-center space-x-2">
-          <Checkbox
-            id={`task-${todo.id}`}
-            checked={todo.completed}
-            onCheckedChange={() => toggleComplete(todo.id)}
-          />
-          {todo.isEditing ? (
-            <Input
-              value={todo.text}
-              onChange={(e) => updateText(todo.id, e.target.value)}
-              onBlur={() => toggleEdit(todo.id)}
-              autoFocus
-              className="text-sm"
-            />
-          ) : (
-            <label
-              htmlFor={`task-${todo.id}`}
-              className={`text-sm leading-none ${todo.completed ? "line-through text-muted-foreground" : ""}`}
-              onDoubleClick={() => toggleEdit(todo.id)}
-            >
-              {todo.text}
-            </label>
-          )}
-          <div className="flex space-x-1">
-            <Pencil
-              size={14}
-              className="text-muted-foreground cursor-pointer"
-              onClick={() => toggleEdit(todo.id)}
-            />
-            <Trash
-              size={14}
-              className="text-red-500 cursor-pointer hover:text-red-600"
-              onClick={() => deleteTodo(todo.id)}
-            />
-          </div>
+            <Card className="min-h-80 flex flex-col">
+                <CardHeader className="flex justify-between items-center">
+                    <CardTitle>todo: {today}</CardTitle>
+                    <CardDescription>Daily Todo</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 overflow-y-auto space-y-4">
+                    {todos.map((todo) => (
+                        <div key={todo.id} className="flex items-center space-x-2">
+                            <Checkbox
+                                id={`task-${todo.id}`}
+                                checked={todo.completed}
+                                onCheckedChange={() => toggleComplete(todo.id)}
+                            />
+                            {todo.isEditing ? (
+                                <Input
+                                    value={todo.text}
+                                    onChange={(e) => updateText(todo.id, e.target.value)}
+                                    onBlur={() => toggleEdit(todo.id)}
+                                    autoFocus
+                                    className="text-sm"
+                                />
+                            ) : (
+                                <label
+                                    htmlFor={`task-${todo.id}`}
+                                    className={`text-sm leading-none ${todo.completed ? "line-through text-muted-foreground" : ""}`}
+                                    onDoubleClick={() => toggleEdit(todo.id)}
+                                >
+                                    {todo.text}
+                                </label>
+                            )}
+                            <div className="flex space-x-1">
+                                <Pencil
+                                    size={14}
+                                    className="text-muted-foreground cursor-pointer"
+                                    onClick={() => toggleEdit(todo.id)}
+                                />
+                                <Trash
+                                    size={14}
+                                    className="text-red-500 cursor-pointer hover:text-red-600"
+                                    onClick={() => deleteTodo(todo.id)}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </CardContent>
+
+                <div className="p-4 border-t flex items-center gap-2">
+                    <Input
+                        value={newTodo}
+                        onChange={(e) => setNewTodo(e.target.value)}
+                        placeholder="New task..."
+                        className="flex-1"
+                    />
+                    <Button size="sm" onClick={addTodo}>
+                        <Plus />
+                    </Button>
+
+                </div>
+                
+            </Card>
+            <p className="text-gray-400 text-center text-sm">
+                Note: Daily todos expire at midnight!
+            </p>            
         </div>
-      ))}
-    </CardContent>
-
-    {/* Input at the very bottom */}
-    <div className="p-4 border-t flex items-center gap-2">
-      <Input
-        value={newTodo}
-        onChange={(e) => setNewTodo(e.target.value)}
-        placeholder="New task..."
-        className="flex-1"
-      />
-      <Button size="sm" onClick={addTodo}>+</Button>
-    </div>
-  </Card>
-</div>
 
     )
 }
