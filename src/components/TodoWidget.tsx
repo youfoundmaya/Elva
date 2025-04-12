@@ -117,8 +117,8 @@ export default function TodoWidget() {
         
         <div className="w-80">
             <Card className="max-h-[300] min-h-80 overflow-auto flex flex-col bg-white border border-black rounded-lg shadow-lg">
-                <CardHeader className="flex justify-between font-bold items-center">
-                    <CardTitle>todo: {today}</CardTitle>
+                <CardHeader className="flex justify-between items-center">
+                    <CardTitle className="text-3xl font-bold">todo: {today}</CardTitle>
                     <CardDescription>Daily Todo</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 overflow-y-auto space-y-4">
@@ -176,7 +176,7 @@ export default function TodoWidget() {
                 </div>
 
             </Card>
-            <p className="text-gray-400 text-center text-md">
+            <p className="text-gray-400 text-center text-md pt-3">
                 Note: Daily todos expire at midnight!
             </p>
         </div>

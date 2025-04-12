@@ -78,7 +78,7 @@ export default function StickyNotesWidget() {
             <div className="flex flex-col items-center pb-8">
                 <Button
                     onClick={createSticky}
-                    className="p-4 text-xl border-2 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-300 ease-in-out"
+                    className="p-6 text-3xl font-bold border-2 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-300 ease-in-out"
                     variant="outline"
                 >
                     <StickyNote className="w-10 h-10" /> 
