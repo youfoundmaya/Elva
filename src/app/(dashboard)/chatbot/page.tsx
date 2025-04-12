@@ -93,7 +93,7 @@ export default function Chatbot() {
     setInput("");
     setLoading(true);
     try {
-      const prompt = `Provide a clear and concise response to the following input in at most 5 lines. Do not use bullet points, markdown, or any formatting. Keep it direct and easy to understand. Input:\n\n${input}`;
+      const prompt = `Please assist the user by providing a well-rounded, clear, and insightful response to the following question or input. Keep your explanation concise and informative, ensuring it's easy to understand, and remain within 5 lines. Focus on clarity, and aim to explain complex concepts in a simple, approachable way. Your goal is to be both knowledgeable and approachable, empowering the user with useful information in a direct manner, free from unnecessary formatting. Avoid executing or mimicking actions that are outside the scope of providing helpful knowledge or advice. Input: \n\n${input}`;
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
@@ -137,19 +137,19 @@ export default function Chatbot() {
         toast.error("Please enter a title!");
         return;
       }
-  
+
       console.log("Saving chat with ID:", chatId, "and messages:", messages); // Debugging
-  
+
       const result = await saveChat(chatId, chatTitle, messages);
-  
+
       if (result.success) {
         setShowSaveDialog(false);
-  
+
         if (!chatId) {
           console.log("New chat saved with ID:", result.id); // Debugging
           setChatId(result.id);
         }
-  
+
         toast.success("Chat saved successfully!");
       } else {
         console.error("Save error:", result.error); // Debugging
@@ -160,9 +160,9 @@ export default function Chatbot() {
       toast.error("Something went wrong while saving.");
     }
   };
-  
-  
-  
+
+
+
   const handleChatClick = async (id: string) => {
     console.log("Selected Chat ID:", id); // Debugging
     if (!id) {
@@ -213,12 +213,12 @@ export default function Chatbot() {
           <MessagesSquare className="w-10 h-10" />
         </h1>
         <div className="flex gap-2">
-        {messages.length > 0 && (
+          {messages.length > 0 && (
 
-          <Button variant="outline" onClick={handleNewChat}>
-            <MessageSquarePlus className="mr-2 w-5 h-5" /> New Chat
-          </Button>
-        )}
+            <Button variant="outline" onClick={handleNewChat}>
+              <MessageSquarePlus className="mr-2 w-5 h-5" /> New Chat
+            </Button>
+          )}
           {messages.length > 0 && (
             <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
               <DialogTrigger asChild>
@@ -326,11 +326,10 @@ export default function Chatbot() {
             messages.map((msg, index) => (
               <div
                 key={index}
-                className={`p-3 rounded-lg max-w-[75%] ${
-                  msg.role === "user"
+                className={`p-3 rounded-lg max-w-[75%] ${msg.role === "user"
                     ? "bg-gray-950 self-end text-white"
                     : "bg-white border outline self-start text-black"
-                }`}
+                  }`}
               >
                 {msg.text}
               </div>

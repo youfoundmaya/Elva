@@ -42,16 +42,19 @@ export default function StickyNotesWidget() {
         const id = Date.now()
         const newRef = React.createRef<HTMLDivElement>()
         refs.current.set(id, newRef)
-
+      
+        // Stick it above the button roughly
         const newNote: StickyNote = {
-            id,
-            text: "",
-            color: colors[Math.floor(Math.random() * colors.length)],
-            x: Math.random() * 300,
-            y: Math.random() * 300,
+          id,
+          text: "",
+          color: colors[Math.floor(Math.random() * colors.length)],
+          x: 20 + Math.random() * 50, // horizontal offset
+          y: -120 + Math.random() * -30, // ABOVE the button
         }
+      
         setNotes((prev) => [...prev, newNote])
-    }
+      }
+      
 
     const updateText = (id: number, text: string) => {
         setNotes((prev) =>
@@ -71,27 +74,29 @@ export default function StickyNotesWidget() {
     }
 
     return (
-        <div className="relative h-full">
-            <Card className="text-gray-800 p-3 w-fit  md:w-auto">
-                <div className="flex items-center">
-                    
-                    <Button
-                        onClick={createSticky}
-                        className="p-3 text-lg border"
-                        variant="outline"
-                    >
-                        <StickyNote className="text-xl"/>
-                        Post it!
-                    </Button>
-                    <div>
-                    <p className="ml-4">
-                       Create lightweight, draggable sticky notes for your quick thoughts and reminders!</p>
-                       <p className="ml-4 text-gray-600">Note: the sticky notes are persistent, however only displayed on Dashboard.</p>
-                    </div>
-                    
+        <div className="mx-auto p-6 bg-white border border-black rounded-lg shadow-lg text-center">
+            <div className="flex flex-col items-center pb-8">
+                <Button
+                    onClick={createSticky}
+                    className="p-4 text-xl border-2 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-300 ease-in-out"
+                    variant="outline"
+                >
+                    <StickyNote className="w-10 h-10" /> 
+                    Post it!
+                </Button>
                 </div>
-                
-            </Card>
+                <div className="ml-4">
+                    <p>
+                        Create lightweight, draggable sticky notes for your quick thoughts and reminders!
+                        </p>
+                    <p className="text-gray-600">
+                        Note: the sticky notes are persistent, however only displayed on Dashboard.
+                        </p>
+                </div>
+
+
+
+
 
             {notes.map((note) => {
                 if (!refs.current.has(note.id)) {

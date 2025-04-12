@@ -67,8 +67,8 @@ export default function TodoWidget() {
     // Remove todos at midnight using a timer
     useEffect(() => {
         const now = new Date()
-       // const millisTillMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime()
-        const millisTillMidnight = Date.now() + 2 * 60 * 1000;
+        const millisTillMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime()
+        console.log(millisTillMidnight)
         const timeout = setTimeout(() => {
             localStorage.removeItem("todos")
             setTodos([]) // Clear todos
@@ -114,10 +114,10 @@ export default function TodoWidget() {
     }
 
     return (
+        
         <div className="w-80">
-
-            <Card className="min-h-80 flex flex-col">
-                <CardHeader className="flex justify-between items-center">
+            <Card className="max-h-[300] min-h-80 overflow-auto flex flex-col bg-white border border-black rounded-lg shadow-lg">
+                <CardHeader className="flex justify-between font-bold items-center">
                     <CardTitle>todo: {today}</CardTitle>
                     <CardDescription>Daily Todo</CardDescription>
                 </CardHeader>
@@ -174,11 +174,11 @@ export default function TodoWidget() {
                     </Button>
 
                 </div>
-                
+
             </Card>
-            <p className="text-gray-400 text-center text-sm">
+            <p className="text-gray-400 text-center text-md">
                 Note: Daily todos expire at midnight!
-            </p>            
+            </p>
         </div>
 
     )
