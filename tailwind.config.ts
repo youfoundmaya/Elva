@@ -16,8 +16,7 @@ export default {
       fontFamily: {
         mono: ["var(--font-geist-mono)"],
         sans: ["var(--font-geist-sans)"],
-        pomodoro: ["Courier New", "monospace"],
-      },
+        pomodoro: ['Bebas Neue', 'sans-serif'],      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
