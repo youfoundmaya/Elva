@@ -46,7 +46,10 @@ const PomodoroTimer: React.FC = () => {
       if (remaining <= 0) {
         setIsRunning(false);
         setStartTimestamp(null);
-        if (audioRef.current) audioRef.current.play();
+        if (audioRef.current) {
+          audioRef.current.play();
+          resetTimer()
+        };
         return;
       }
 
@@ -61,7 +64,10 @@ const PomodoroTimer: React.FC = () => {
             setTimeLeft(0);
             setIsRunning(false);
             setStartTimestamp(null);
-            if (audioRef.current) audioRef.current.play();
+            if (audioRef.current)  {
+              audioRef.current.play();
+              resetTimer()
+            };
           } else {
             setTimeLeft(newRemaining);
           }
