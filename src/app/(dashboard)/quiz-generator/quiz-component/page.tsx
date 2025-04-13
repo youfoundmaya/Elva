@@ -19,7 +19,7 @@ import { toast } from "sonner";
 
 const AttemptQuiz = () => {
   const router = useRouter();
-    const [quiz, setQuiz] = useState<any[]|null>([]);
+  const [quiz, setQuiz] = useState<any[] | null>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -40,7 +40,7 @@ const AttemptQuiz = () => {
       setQuiz(JSON.parse(storedQuiz));
     } else {
       console.error("Quiz data not found!");
-      router.push("/dashboard"); 
+      router.push("/dashboard");
     }
     const storedInfo = localStorage.getItem("quizInfo");
     if (storedInfo) {
@@ -98,7 +98,7 @@ const AttemptQuiz = () => {
     <div>
       <div className="flex gap-4 mb-6">
 
-      <AlertDialog>
+        <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="outline">Cancel</Button>
           </AlertDialogTrigger>
@@ -117,7 +117,7 @@ const AttemptQuiz = () => {
           </AlertDialogContent>
         </AlertDialog>
 
-        
+
         <Button variant="outline" onClick={handleSave}>
           Save Quiz
         </Button>
@@ -151,13 +151,12 @@ const AttemptQuiz = () => {
                 onClick={() => handleOptionClick(key)}
                 className={`w-full bg-white-700 p-4 rounded-lg text-left outline
 
-                ${
-                  isSelected
+                ${isSelected
                     ? isRight
                       ? "text-bold bg-green-500 text-white hover:bg-green-600 border-green-600"
                       : "text-bold bg-red-500 text-white border-red-600"
                     : "bg-white-700 hover:bg-gray-200 text-bold"
-                }`}
+                  }`}
               >
                 {key}. {option as string}
               </button>
@@ -178,17 +177,41 @@ const AttemptQuiz = () => {
             Previous
           </button>
 
-          <button
-            onClick={() => {
-              setCurrentIndex((prev) => Math.min(prev + 1, quiz.length - 1));
-              setSelectedOption(null);
-              setIsCorrect(null);
-            }}
-            disabled={currentIndex === quiz.length - 1}
-            className="px-6 py-2 text-bold text-white bg-green-500 hover:bg-green-600 disabled:bg-gray-700 disabled:text-white rounded-lg"
-          >
-            Next
-          </button>
+          {currentIndex < quiz.length - 1 ? (
+            <button
+              onClick={() => {
+                setCurrentIndex((prev) => Math.min(prev + 1, quiz.length - 1));
+                setSelectedOption(null);
+                setIsCorrect(null);
+              }}
+              disabled={currentIndex === quiz.length - 1}
+              className="px-6 py-2 text-bold text-white bg-green-500 hover:bg-green-600 disabled:bg-gray-700 disabled:text-white rounded-lg"
+            >
+              Next
+            </button>
+          ) : (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="px-6 py-2 text-bold text-white bg-red-500 hover:bg-red-600 rounded-lg">
+                  Finish
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Closing the Quiz</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    If you have not saved this quiz, then it will be deleted forever.
+                    Cancel to leave, return to save the quiz and then leave.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Return to Quiz</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => router.back()}>Cancel the quiz</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
         </div>
       </div>
     </div>
