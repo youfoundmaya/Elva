@@ -68,6 +68,7 @@ export default function TodoWidget() {
     useEffect(() => {
         const now = new Date()
         const millisTillMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime()
+        
         console.log(millisTillMidnight)
         const timeout = setTimeout(() => {
             localStorage.removeItem("todos")

@@ -65,10 +65,6 @@ const AttemptQuiz = () => {
   };
 
   const handleSave = async () => {
-    if (!quiz) {
-      toast.error("No quiz available to save!");
-      return;
-    }
     try {
       const savedQuiz = await saveQuiz(
         quizInfo.title,
