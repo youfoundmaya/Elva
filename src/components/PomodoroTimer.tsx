@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { usePomodoroStore } from './PomodoroStore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
+import { setupGlobalTimer, clearGlobalTimer, requestNotificationPermission, notifyTimerComplete } from './timerService';
 
 const formatTime = (time: number): string => {
   const minutes = Math.floor(time / 60);
@@ -18,70 +19,61 @@ const PomodoroTimer: React.FC = () => {
     isRunning,
     customTimes,
     startTimestamp,
+    timerCompleted,
     setMode,
     setTimeLeft,
     setIsRunning,
     updateCustomTime,
     resetTimeLeft,
     setStartTimestamp,
+    setTimerCompleted,
   } = usePomodoroStore();
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const totalTime = customTimes[mode];
   const progressPercent = ((totalTime - timeLeft) / totalTime) * 100;
-
+  
+  // Request notification permission on mount
   useEffect(() => {
-    audioRef.current = new Audio('/finished.mp3');
+    setMounted(true);
+    requestNotificationPermission();
+    
+    return () => {
+      // Don't clear the global timer on unmount
+    };
   }, []);
-
-  // On mount: recalculate if timer is running
+  
+  // Check for completed timer that needs to play sound
   useEffect(() => {
-    if (isRunning && startTimestamp) {
-      const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
-      const remaining = Math.max(0, totalTime - elapsed);
-      setTimeLeft(remaining);
+    if (mounted && timerCompleted) {
+      // Play notification sound and reset the flag
+      notifyTimerComplete(mode === 'work' ? 'Work' : mode === 'shortBreak' ? 'Short Break' : 'Long Break');
+      setTimerCompleted(false);
+    }
+  }, [mounted, timerCompleted, mode, setTimerCompleted]);
 
-      if (remaining <= 0) {
+  // Setup global timer
+  useEffect(() => {
+    if (!mounted) return;
+    
+    setupGlobalTimer(
+      isRunning,
+      startTimestamp,
+      totalTime,
+      (remaining) => {
+        setTimeLeft(remaining);
+      },
+      () => {
+        // Timer completed
+        setTimeLeft(0);
         setIsRunning(false);
         setStartTimestamp(null);
-        if (audioRef.current) {
-          audioRef.current.play();
-          resetTimer()
-        };
-        return;
+        setTimerCompleted(true); // Set flag to play sound
+        resetTimer();
       }
-
-      if (!intervalRef.current) {
-        intervalRef.current = setInterval(() => {
-          const newElapsed = Math.floor((Date.now() - startTimestamp) / 1000);
-          const newRemaining = Math.max(0, totalTime - newElapsed);
-
-          if (newRemaining <= 0) {
-            clearInterval(intervalRef.current!);
-            intervalRef.current = null;
-            setTimeLeft(0);
-            setIsRunning(false);
-            setStartTimestamp(null);
-            if (audioRef.current)  {
-              audioRef.current.play();
-              resetTimer()
-            };
-          } else {
-            setTimeLeft(newRemaining);
-          }
-        }, 1000);
-      }
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [isRunning, startTimestamp, totalTime]);
+    );
+  }, [isRunning, startTimestamp, totalTime, mounted, setTimeLeft, setIsRunning, setStartTimestamp, setTimerCompleted]);
 
   const startTimer = () => {
     if (!isRunning) {
@@ -93,6 +85,7 @@ const PomodoroTimer: React.FC = () => {
   const pauseTimer = () => {
     setIsRunning(false);
     setStartTimestamp(null);
+    clearGlobalTimer();
   };
 
   const resetTimer = () => {
@@ -103,6 +96,9 @@ const PomodoroTimer: React.FC = () => {
   const handleTimeChange = (mode: 'work' | 'shortBreak' | 'longBreak', value: number) => {
     updateCustomTime(mode, value);
   };
+
+  // Don't render until mounted
+  if (!mounted) return null;
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white border border-black rounded-lg shadow-lg text-center">

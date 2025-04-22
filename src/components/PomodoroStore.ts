@@ -1,4 +1,3 @@
-// app/store/usePomodoroStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -10,7 +9,9 @@ interface PomodoroStore {
   isRunning: boolean;
   customTimes: Record<Mode, number>;
   startTimestamp: number | null;
+  timerCompleted: boolean;
 
+  setTimerCompleted: (completed: boolean) => void;
   setMode: (mode: Mode) => void;
   setTimeLeft: (time: number) => void;
   setIsRunning: (running: boolean) => void;
@@ -18,6 +19,26 @@ interface PomodoroStore {
   resetTimeLeft: () => void;
   setStartTimestamp: (timestamp: number | null) => void;
 }
+
+// Create a storage object that handles SSR properly
+const zustandStorage = {
+  getItem: (name: string) => {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    return JSON.parse(window.localStorage.getItem(name) || 'null');
+  },
+  setItem: (name: string, value: any) => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(name, JSON.stringify(value));
+    }
+  },
+  removeItem: (name: string) => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(name);
+    }
+  },
+};
 
 export const usePomodoroStore = create<PomodoroStore>()(
   persist(
@@ -31,6 +52,7 @@ export const usePomodoroStore = create<PomodoroStore>()(
         longBreak: 15 * 60,
       },
       startTimestamp: null,
+      timerCompleted: false,
 
       setMode: (mode) => {
         const custom = get().customTimes[mode];
@@ -46,12 +68,9 @@ export const usePomodoroStore = create<PomodoroStore>()(
         set({ customTimes: newTimes });
       
         if (get().mode === mode) {
-          // If the timer is running, stop it before applying the change
           if (isRunning) {
             set({ isRunning: false });
           }
-      
-          // Now, set the updated timeLeft based on new custom time
           set({ timeLeft: newTimeInSeconds });
         }
       },      
@@ -60,9 +79,15 @@ export const usePomodoroStore = create<PomodoroStore>()(
         set({ timeLeft: customTimes[mode], startTimestamp: null });
       },
       setStartTimestamp: (timestamp) => set({ startTimestamp: timestamp }),
+      setTimerCompleted: (completed) => set({ timerCompleted: completed }),
     }),
     {
       name: 'pomodoro-store',
+      storage: {
+        getItem: zustandStorage.getItem,
+        setItem: zustandStorage.setItem,
+        removeItem: zustandStorage.removeItem,
+      },
     }
   )
 );
