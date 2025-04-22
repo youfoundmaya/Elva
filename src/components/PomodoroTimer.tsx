@@ -174,6 +174,7 @@ const PomodoroTimer: React.FC = () => {
                 onChange={(e) => handleTimeChange('work', Number(e.target.value))}
                 className="w-full px-2 py-1 border rounded"
                 min="1"
+                max="300"
               />
             </div>
             <div>
@@ -184,6 +185,7 @@ const PomodoroTimer: React.FC = () => {
                 onChange={(e) => handleTimeChange('shortBreak', Number(e.target.value))}
                 className="w-full px-2 py-1 border rounded"
                 min="1"
+                max="300"
               />
             </div>
             <div>
@@ -194,6 +196,7 @@ const PomodoroTimer: React.FC = () => {
                 onChange={(e) => handleTimeChange('longBreak', Number(e.target.value))}
                 className="w-full px-2 py-1 border rounded"
                 min="1"
+                max="300"
               />
             </div>
           </div>
