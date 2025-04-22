@@ -1,10 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import clsx from 'clsx';
+import React, { useEffect, useRef, useState } from 'react';
 import { usePomodoroStore } from './PomodoroStore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
-import { setupGlobalTimer, clearGlobalTimer, requestNotificationPermission, notifyTimerComplete } from './timerService';
 
 const formatTime = (time: number): string => {
   const minutes = Math.floor(time / 60);
@@ -12,93 +10,159 @@ const formatTime = (time: number): string => {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 };
 
+// Create a global variable to store the interval ID
+let globalIntervalId: NodeJS.Timeout | null = null;
+
 const PomodoroTimer: React.FC = () => {
   const {
     mode,
     timeLeft,
     isRunning,
     customTimes,
-    startTimestamp,
-    timerCompleted,
+    startTime,
     setMode,
     setTimeLeft,
     setIsRunning,
     updateCustomTime,
     resetTimeLeft,
-    setStartTimestamp,
-    setTimerCompleted,
+    setStartTime,
   } = usePomodoroStore();
 
-  const [mounted, setMounted] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const totalTime = customTimes[mode];
   const progressPercent = ((totalTime - timeLeft) / totalTime) * 100;
-  
-  // Request notification permission on mount
+
+  // Initialize on client-side only
   useEffect(() => {
-    setMounted(true);
-    requestNotificationPermission();
+    setIsMounted(true);
+    audioRef.current = new Audio('/finished.mp3');
+    
+    // Try to initialize audio
+    document.addEventListener('click', function initAudio() {
+      if (audioRef.current) {
+        audioRef.current.volume = 0.1;
+        audioRef.current.play().then(() => {
+          audioRef.current!.pause();
+          audioRef.current!.currentTime = 0;
+        }).catch(e => console.log("Audio init failed, but that's expected"));
+        document.removeEventListener('click', initAudio);
+      }
+    });
     
     return () => {
-      // Don't clear the global timer on unmount
+      // Don't clear the interval on unmount - we want it to continue
     };
   }, []);
-  
-  // Check for completed timer that needs to play sound
-  useEffect(() => {
-    if (mounted && timerCompleted) {
-      // Play notification sound and reset the flag
-      notifyTimerComplete(mode === 'work' ? 'Work' : mode === 'shortBreak' ? 'Short Break' : 'Long Break');
-      setTimerCompleted(false);
-    }
-  }, [mounted, timerCompleted, mode, setTimerCompleted]);
 
-  // Setup global timer
+  // Synchronize timer state
   useEffect(() => {
-    if (!mounted) return;
+    if (!isMounted) return;
     
-    setupGlobalTimer(
-      isRunning,
-      startTimestamp,
-      totalTime,
-      (remaining) => {
-        setTimeLeft(remaining);
-      },
-      () => {
-        // Timer completed
-        setTimeLeft(0);
-        setIsRunning(false);
-        setStartTimestamp(null);
-        setTimerCompleted(true); // Set flag to play sound
-        resetTimer();
+    // If timer is running, make sure we have an interval
+    if (isRunning && startTime) {
+      // Clear any existing interval
+      if (globalIntervalId) {
+        clearInterval(globalIntervalId);
       }
-    );
-  }, [isRunning, startTimestamp, totalTime, mounted, setTimeLeft, setIsRunning, setStartTimestamp, setTimerCompleted]);
+      
+      // Calculate current time based on start time
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const currentTimeLeft = Math.max(0, totalTime - elapsed);
+      
+      // Update time left
+      if (currentTimeLeft !== timeLeft) {
+        setTimeLeft(currentTimeLeft);
+      }
+      
+      // If timer has completed
+      if (currentTimeLeft <= 0) {
+        handleTimerComplete();
+        return;
+      }
+      
+      // Set up new interval
+      globalIntervalId = setInterval(() => {
+        const newElapsed = Math.floor((Date.now() - startTime) / 1000);
+        const newTimeLeft = Math.max(0, totalTime - newElapsed);
+        
+        setTimeLeft(newTimeLeft);
+        
+        if (newTimeLeft <= 0) {
+          handleTimerComplete();
+        }
+      }, 1000);
+    } 
+    // If timer is not running, clear interval
+    else if (!isRunning && globalIntervalId) {
+      clearInterval(globalIntervalId);
+      globalIntervalId = null;
+    }
+    
+    // Cleanup function
+    return () => {
+      // We intentionally don't clear the interval here
+      // to allow it to continue when navigating away
+    };
+  }, [isRunning, startTime, isMounted, totalTime]);
+
+  const handleTimerComplete = () => {
+    // Clear interval
+    if (globalIntervalId) {
+      clearInterval(globalIntervalId);
+      globalIntervalId = null;
+    }
+    
+    // Update state
+    setTimeLeft(0);
+    setIsRunning(false);
+    setStartTime(null);
+    
+    // Play sound if possible
+    if (audioRef.current) {
+      audioRef.current.play().catch(e => {
+        console.log("Couldn't play audio automatically");
+        
+        // Try to show a notification instead
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("Timer Complete", {
+            body: "Your Pomodoro timer has finished!",
+            icon: "/favicon.ico"
+          });
+        }
+      });
+    }
+  };
 
   const startTimer = () => {
     if (!isRunning) {
-      setStartTimestamp(Date.now() - (customTimes[mode] - timeLeft) * 1000);
+      // Calculate start time based on current time left
+      const newStartTime = Date.now() - ((totalTime - timeLeft) * 1000);
+      setStartTime(newStartTime);
       setIsRunning(true);
     }
   };
 
   const pauseTimer = () => {
     setIsRunning(false);
-    setStartTimestamp(null);
-    clearGlobalTimer();
   };
 
   const resetTimer = () => {
-    pauseTimer();
+    if (globalIntervalId) {
+      clearInterval(globalIntervalId);
+      globalIntervalId = null;
+    }
+    setIsRunning(false);
     resetTimeLeft();
   };
 
   const handleTimeChange = (mode: 'work' | 'shortBreak' | 'longBreak', value: number) => {
-    updateCustomTime(mode, value);
+    updateCustomTime(mode, value * 60); // Convert minutes to seconds
   };
 
-  // Don't render until mounted
-  if (!mounted) return null;
+  // Don't render anything until mounted
+  if (!isMounted) return null;
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white border border-black rounded-lg shadow-lg text-center">
@@ -109,19 +173,18 @@ const PomodoroTimer: React.FC = () => {
           <button
             key={m}
             onClick={() => setMode(m)}
-            className={clsx(
-              'px-3 py-1 border rounded uppercase text-sm font-bold transition',
+            className={`px-3 py-1 border rounded uppercase text-sm font-bold transition ${
               mode === m
                 ? 'bg-black text-white border-black'
                 : 'text-black border-gray-400 hover:border-black'
-            )}
+            }`}
           >
             {m === 'work' ? 'Work' : m === 'shortBreak' ? 'Short Break' : 'Long Break'}
           </button>
         ))}
       </div>
 
-      <div className="text-7xl font-pomodoro font-bold mb-4 text-black">
+      <div className="text-7xl font-bold mb-4 text-black">
         {formatTime(timeLeft)}
       </div>
 
@@ -198,6 +261,18 @@ const PomodoroTimer: React.FC = () => {
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+      
+      {/* Button to test audio */}
+      <button 
+        onClick={() => {
+          if (audioRef.current) {
+            audioRef.current.play().catch(e => console.log("Audio play failed"));
+          }
+        }}
+        className="mt-4 text-xs text-gray-500 underline"
+      >
+        Test Sound
+      </button>
     </div>
   );
 };
