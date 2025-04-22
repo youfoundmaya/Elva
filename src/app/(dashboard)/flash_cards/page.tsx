@@ -41,15 +41,14 @@ const FlashCards = () => {
     setFlashcards([]);
 
     try {
-      const prompt = `Generate exactly ${flashcardCount} high-quality, challenging flashcards from the following content. Each flashcard should:
+      const prompt = `Generate exactly ${flashcardCount} challenging, concise flashcards from the following content. Each flashcard should:
 
-1. Target conceptual understanding, critical thinking, or application of knowledge
-2. Cover distinct concepts without overlap or repetition
-3. Be self-contained (no references to "previous questions" or "as mentioned before")
-4. Include specific details rather than general information
-5. For technical/scientific content: include formula application, edge cases, or comparisons
-6. For humanities: focus on analysis, evaluation of arguments, or connecting concepts
-
+    Test deep conceptual understanding in 15 words or fewer
+    Cover distinct concepts with zero redundancy
+    Be self-contained and context-independent
+    Target application over memorization
+    For technical content: focus on key principles, formulas, or edge cases
+    For humanities: emphasize critical analysis of core arguments
 Format as a JSON array:
 [
   {"question": "Precise, challenging question that requires deep understanding?", "answer": "Concise, accurate answer with key details"},
@@ -258,7 +257,7 @@ Content: \n\n${text}
       </p>
       <br />
       <p className="text-gray-900 mb-6 text-center max-w-xl">
-        Note: Minimum 20, and maximum 100 flashcards can be generated as of now.
+        Note: Minimum 10, and maximum 80 flashcards can be generated as of now.
       </p>
 
       <div className="flex gap-5">

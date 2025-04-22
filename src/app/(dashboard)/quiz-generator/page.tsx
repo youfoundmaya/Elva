@@ -382,7 +382,7 @@ Answer from Perplexity: pplx.ai/share
       </p>
 
       <p className="text-gray-900 mb-6 text-center max-w-xl">
-        Note: Minimum 10, and maximum 80 questions can be generated as of now.
+        Note: Minimum 10, and maximum 40 questions can be generated as of now.
       </p>
 
 
