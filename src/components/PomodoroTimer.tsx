@@ -158,9 +158,10 @@ const PomodoroTimer: React.FC = () => {
   };
 
   const handleTimeChange = (mode: 'work' | 'shortBreak' | 'longBreak', value: number) => {
-    updateCustomTime(mode, value * 60); // Convert minutes to seconds
+    const validValue = Math.min(value, 300);
+    updateCustomTime(mode, validValue);
   };
-
+  
   // Don't render anything until mounted
   if (!isMounted) return null;
 
@@ -184,7 +185,7 @@ const PomodoroTimer: React.FC = () => {
         ))}
       </div>
 
-      <div className="text-7xl font-bold mb-4 text-black">
+      <div className="text-7xl font-pomodoro font-bold mb-4 text-black">
         {formatTime(timeLeft)}
       </div>
 
@@ -233,7 +234,6 @@ const PomodoroTimer: React.FC = () => {
                 onChange={(e) => handleTimeChange('work', Number(e.target.value))}
                 className="w-full px-2 py-1 border rounded"
                 min="1"
-                max="300"
               />
             </div>
             <div>
@@ -262,17 +262,6 @@ const PomodoroTimer: React.FC = () => {
         </DropdownMenuContent>
       </DropdownMenu>
       
-      {/* Button to test audio */}
-      <button 
-        onClick={() => {
-          if (audioRef.current) {
-            audioRef.current.play().catch(e => console.log("Audio play failed"));
-          }
-        }}
-        className="mt-4 text-xs text-gray-500 underline"
-      >
-        Test Sound
-      </button>
     </div>
   );
 };
