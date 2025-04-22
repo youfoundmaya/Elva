@@ -47,7 +47,6 @@ export default function Chatbot() {
     []
   ); // State for saved chat titles
   const [hasChats, setHasChats] = useState(false);
-  const router = useRouter();
   const toastID = useId();
 
   async function getChats() {

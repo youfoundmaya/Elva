@@ -75,7 +75,7 @@ const FlashCards = () => {
         setFlashcards(parsedFlashcards);
       toast.success("Flashcards generated successfully!");
       } catch (error) {
-        console.error("Invalid JSON response:", rawText);
+        console.log(error);
         toast.error("AI response is not valid JSON. Try again.");
       }
 
@@ -144,6 +144,7 @@ const FlashCards = () => {
             }
           } catch (mammothError) {
             console.warn("Mammoth failed, falling back to Docxtemplater...");
+            console.log(mammothError)
           }
 
           // ✅ PizZip with error handling
