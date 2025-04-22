@@ -41,14 +41,25 @@ const FlashCards = () => {
     setFlashcards([]);
 
     try {
-      const prompt = `Generate exactly ${flashcardCount} high-quality flashcards from the following content. Each flashcard should have a "Question" and a short but precise "Answer". Use a structured JSON format as:
-      [
-        {"question": "Question 1?", "answer": "Answer 1"},
-        {"question": "Question 2?", "answer": "Answer 2"},
-        ...
-      ].
-      Return ONLY the JSON array. Do not include any other text or markdown.
-      Content: \n\n${text}`;
+      const prompt = `Generate exactly ${flashcardCount} high-quality, challenging flashcards from the following content. Each flashcard should:
+
+1. Target conceptual understanding, critical thinking, or application of knowledge
+2. Cover distinct concepts without overlap or repetition
+3. Be self-contained (no references to "previous questions" or "as mentioned before")
+4. Include specific details rather than general information
+5. For technical/scientific content: include formula application, edge cases, or comparisons
+6. For humanities: focus on analysis, evaluation of arguments, or connecting concepts
+
+Format as a JSON array:
+[
+  {"question": "Precise, challenging question that requires deep understanding?", "answer": "Concise, accurate answer with key details"},
+  ...
+]
+
+Return ONLY the valid JSON array without commentary, explanations, or markdown formatting.
+
+Content: \n\n${text}
+`;
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
@@ -73,7 +84,7 @@ const FlashCards = () => {
       try {
         const parsedFlashcards = JSON.parse(rawText);
         setFlashcards(parsedFlashcards);
-      toast.success("Flashcards generated successfully!");
+        toast.success("Flashcards generated successfully!");
       } catch (error) {
         console.log(error);
         toast.error("AI response is not valid JSON. Try again.");
@@ -81,7 +92,7 @@ const FlashCards = () => {
 
       /*  if (parsedFlashcards.length < 40) throw new Error("Insufficient flashcards generated"); */
 
-      
+
     } catch (error) {
       console.error("Error generating flashcards:", error);
       toast.error("Failed to generate flashcards. Try again.");
@@ -169,8 +180,7 @@ const FlashCards = () => {
           } catch (docError: any) {
             console.error("Docxtemplater error:", docError);
             reject(
-              `Error extracting DOCX text: ${
-                docError.message || "Unknown error"
+              `Error extracting DOCX text: ${docError.message || "Unknown error"
               }`
             );
           }
@@ -246,7 +256,7 @@ const FlashCards = () => {
         <br />
         Or simply type the topic!
       </p>
-      <br/>
+      <br />
       <p className="text-gray-900 mb-6 text-center max-w-xl">
         Note: Minimum 20, and maximum 100 flashcards can be generated as of now.
       </p>
@@ -339,9 +349,8 @@ const FlipCard = ({
       onClick={() => setFlipped(!flipped)}
     >
       <motion.div
-        className={`absolute inset-0 w-full text-bold h-full rounded-lg shadow-lg transition-transform duration-500 ${
-          flipped ? "rotate-y-180" : ""
-        }`}
+        className={`absolute inset-0 w-full text-bold h-full rounded-lg shadow-lg transition-transform duration-500 ${flipped ? "rotate-y-180" : ""
+          }`}
       >
         <Card className="absolute w-full h-full flex items-center justify-center text-center text-bold p-6 bg-gray-100">
           {flipped ? answer : question}
@@ -352,13 +361,13 @@ const FlipCard = ({
 };
 
 function FlashcardSelector({ onChange }: { onChange: (num: number) => void }) {
-  const [count, setCount] = useState("40"); // Keep as string for flexible input
+  const [count, setCount] = useState("10"); // Keep as string for flexible input
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
     // Allow empty input or numbers within range
-    if (value === "" || (/^\d+$/.test(value) && Number(value) <= 100)) {
+    if (value === "" || (/^\d+$/.test(value) && Number(value) <= 80)) {
       setCount(value);
       if (value !== "") onChange(Number(value)); // Update in real time
     }
@@ -367,7 +376,7 @@ function FlashcardSelector({ onChange }: { onChange: (num: number) => void }) {
   const handleBlur = () => {
     let num = Number(count);
     if (count === "" || num < 10) num = 10;
-    if (num > 100) num = 100;
+    if (num > 80) num = 80;
 
     setCount(num.toString());
     onChange(num);
@@ -381,7 +390,7 @@ function FlashcardSelector({ onChange }: { onChange: (num: number) => void }) {
 
   return (
     <div className="flex items-center gap-4">
-      <Button 
+      <Button
         onClick={() => updateCount(-1)}
         className="px-4 py-2 rounded-lg text-lg bg-gray-800 text-white hover:bg-gray-700"
       >
@@ -396,7 +405,7 @@ function FlashcardSelector({ onChange }: { onChange: (num: number) => void }) {
         className="w-20 h-10 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
-      <Button 
+      <Button
         onClick={() => updateCount(1)}
         className="px-4 py-2 rounded-lg text-lg bg-gray-800 text-white hover:bg-gray-700"
       >

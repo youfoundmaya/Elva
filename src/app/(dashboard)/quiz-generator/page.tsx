@@ -132,38 +132,52 @@ const QuizGenerator = () => {
   async function generateQuiz(text: string, quizInfo: any) {
     try {
       console.log("Prompting gemini", quizInfo);
-      const prompt = `Generate exactly ${quizInfo.num_questions} multiple-choice questions from the following content. 
-          Each question should:
-          - Be clear and concise.
-          - Have a "question" (string).
-          - Have four answer "options" (A, B, C, and D).
-          - Have a "correct_option" (one of A, B, C, or D).
-          - Be based on the title: "${quizInfo.title}" and topic: "${quizInfo.topic}".
-          - The difficulty must be **STRICTLY**: "${quizInfo.difficulty}".
+      const prompt = `Generate exactly ${quizInfo.num_questions} sophisticated multiple-choice questions from the following content. 
 
-          🚨 DO NOT include explanations or any extra text.
-          🚨 THE CORRECT OPTION CAN EITHER BE A, B, C OR D, NOT ALWAYS THE ONE MENTIONED IN THE EXAMPLE.
-          🚨 DO NOT MAKE THE QUESTIONS REDUNDANT. ALL QUESTIONS SHOULD BE UNIQUE.
-          🚨 QUESTIONS SHOULD BE STRICTLY OF THE DIFFICULTY MENTIONED ABOVE.
-          🚨 ONLY GENERATE EXACTLY ${quizInfo.num_questions}
-          🚨 ONLY return a JSON array like this:
-        
-          [
-            {
-              "question": "What is the capital of France?",
-              "options": {
-                "A": "Berlin",
-                "B": "Paris",
-                "C": "Madrid",
-                "D": "Rome"
-              },
-              "correct_option": "B"
-            },
-            ...
-          ]
+Each question must:
+- Target higher-order thinking skills (analysis, evaluation, application) appropriate for ${quizInfo.difficulty} level
+- Avoid surface-level recall and focus on conceptual understanding
+- Include nuanced distractors that test for common misconceptions
+- Be precisely calibrated to ${quizInfo.difficulty} difficulty (Beginner: foundational concepts; Intermediate: application of concepts; Advanced: synthesis and evaluation; Expert: edge cases and specialized knowledge)
+- Maintain complete independence from other questions (no sequential dependencies)
+- For technical subjects: include practical application scenarios
+- For theoretical subjects: test critical analysis of concepts
 
-          Additional information (ONLY FOR GENERATION):
-          \n\n${text}
+Structure requirements:
+- "question": Clear, precisely worded question that requires thoughtful analysis
+- "options": Four distinct choices (A-D) with plausible distractors that reflect common misconceptions
+- "correct_option": Single letter (A, B, C, or D) representing the correct answer
+- Strictly adhere to the topic "${quizInfo.topic}" and title "${quizInfo.title}"
+- Maintain consistent ${quizInfo.difficulty} level across ALL questions
+
+🚨 CRITICAL CONSTRAINTS:
+- Generate EXACTLY ${quizInfo.num_questions} questions - no more, no less
+- Distribute correct answers evenly among options A, B, C, and D
+- Ensure ZERO redundancy between questions
+- Return ONLY a valid JSON array with no explanations, comments, or markdown
+- Strictly follow the specified format
+- Ensure all distractors are plausible but unambiguously incorrect
+
+Return ONLY this JSON structure:
+[
+  {
+    "question": "Precisely worded, challenging question?",
+    "options": {
+      "A": "Plausible distractor",
+      "B": "Correct answer",
+      "C": "Plausible distractor",
+      "D": "Plausible distractor"
+    },
+    "correct_option": "B"
+  },
+  ...
+]
+
+Content for question generation:
+${text}
+
+---
+Answer from Perplexity: pplx.ai/share
 
           `;
       const response = await fetch(
@@ -464,13 +478,13 @@ const QuizGenerator = () => {
 
 
 function NumberSelector({ onChange }: { onChange: (num: number) => void }) {
-  const [count, setCount] = useState("40"); // Keep as string for flexible input
+  const [count, setCount] = useState("10"); // Keep as string for flexible input
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
     // Allow empty input or numbers within range
-    if (value === "" || (/^\d+$/.test(value) && Number(value) <= 80)) {
+    if (value === "" || (/^\d+$/.test(value) && Number(value) <= 40)) {
       setCount(value);
       if (value !== "") onChange(Number(value)); // Update in real time
     }
@@ -479,14 +493,14 @@ function NumberSelector({ onChange }: { onChange: (num: number) => void }) {
   const handleBlur = () => {
     let num = Number(count);
     if (count === "" || num < 10) num = 10;
-    if (num > 80) num = 80;
+    if (num > 40) num = 40;
 
     setCount(num.toString());
     onChange(num);
   };
 
   const updateCount = (value: number) => {
-    const newCount = Math.max(10, Math.min(80, Number(count) + value));
+    const newCount = Math.max(10, Math.min(40, Number(count) + value));
     setCount(newCount.toString());
     onChange(newCount);
   };
