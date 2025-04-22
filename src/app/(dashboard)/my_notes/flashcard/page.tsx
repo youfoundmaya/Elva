@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { fetchFlashcards, deleteFlashcard } from "@/app/actions/dashboard_actions";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
@@ -101,7 +101,7 @@ const FlashcardPage = () => {
         </AlertDialog>
         </div>
       {loading ? (
-        <p className="text-center text-gray-500">Loading...</p>
+         <Suspense fallback={<p className="text-center text-gray-500">Loading...</p>} />
       ) : flashcardSet ? (
         
         <div>
