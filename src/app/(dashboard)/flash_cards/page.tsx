@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { Card } from "@/components/ui/card"; // Import ShadCN Card
+import { Card } from "@/components/ui/card"; 
 import { motion } from "framer-motion";
 import { getDocument } from "pdfjs-dist";
 import { useRouter } from "next/navigation";
@@ -31,7 +31,7 @@ const FlashCards = () => {
     { question: string; answer: string }[]
   >([]);
   const router = useRouter();
-  const [flashcardCount, setFlashcardCount] = useState(40);
+  const [flashcardCount, setFlashcardCount] = useState(10);
 
   const [showDialog, setShowDialog] = useState(false);
   const [title, setTitle] = useState("");

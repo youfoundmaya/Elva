@@ -42,7 +42,7 @@ const QuizGenerator = () => {
   });
   const [quiz, setQuiz] = useState<any>(null);
   const [difficulty, setDifficulty] = useState("Beginner");
-  const [questionCount, setQuestionCount] = useState(40);
+  const [questionCount, setQuestionCount] = useState(10);
 
   const toastId = useId();
   const router = useRouter();
@@ -478,7 +478,7 @@ Answer from Perplexity: pplx.ai/share
 
 
 function NumberSelector({ onChange }: { onChange: (num: number) => void }) {
-  const [count, setCount] = useState("10"); // Keep as string for flexible input
+  const [count, setCount] = useState("10");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
