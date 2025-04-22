@@ -101,9 +101,9 @@ const FlashcardPage = () => {
         </AlertDialog>
         </div>
       {loading ? (
-         <Suspense fallback={<p className="text-center text-gray-500">Loading...</p>} />
+         <p className="text-center text-gray-500">Loading...</p>
       ) : flashcardSet ? (
-        
+        <Suspense fallback={<p className="text-center text-gray-500">Loading...</p>}>
         <div>
             
           <h1 className="text-3xl font-bold text-gray-900 text-center mb-6">{flashcardSet.title}</h1>
@@ -113,6 +113,7 @@ const FlashcardPage = () => {
             ))}
           </div>
         </div>
+        </Suspense>
       ) : (
         <p className="text-center text-gray-500">Flashcard set not found.</p>
       )}
