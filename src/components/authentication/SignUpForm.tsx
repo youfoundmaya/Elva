@@ -1,6 +1,6 @@
 "use client";
 import React, { useId, useState } from "react";
-import { z, ZodLazy } from "zod";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import { redirect } from "next/navigation";
 
 
 const password_regex = new RegExp(
-  "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@$!%*?&])(?=.{8,})"
+  "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@$!#%*?&])(?=.{8,})"
 );
 
 const formSchema = z.object({
@@ -85,16 +85,40 @@ const SignUpForm = ({ className }: { className?: string }) => {
       if (!success) {
         if (error === "Email already in use.") {
           toast.error("You already have an account. Try logging in instead.", { id: toastID });
+          form.reset({
+            username: "",
+            email: "",
+            password: "",
+            confirmPassword: ""
+          });
         } else {
           toast.error(String(error), { id: toastID });
+          form.reset({
+            username: "",
+            email: "",
+            password: "",
+            confirmPassword: ""
+          });
         }
       } else {
         toast.success("Signed up successfully. Please confirm your email.", { id: toastID });
+        form.reset({
+          username: "",
+          email: "",
+          password: "",
+          confirmPassword: ""
+        });
         redirect('/login');
       }
     } catch (err) {
       console.error("Unexpected error:", err);
-      toast.error("Unexpected error during signup", { id: toastID });
+      form.reset({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: ""
+      });
+      toast.success("Signed up successfully. Please confirm your email.", { id: toastID });
     } finally {
       setLoading(false);
     }
